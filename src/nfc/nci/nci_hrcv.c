@@ -28,7 +28,7 @@
 #include "bt_types.h"
 #include "gki.h"
 
-#if NFC_INCLUDED == TRUE
+#if (NFC_INCLUDED == TRUE)
 #include "nci_defs.h"
 #include "nci_hmsgs.h"
 #include "nfc_api.h"
@@ -43,15 +43,15 @@
 ** Returns          TRUE-caller of this function to free the GKI buffer p_msg
 **
 *******************************************************************************/
-BOOLEAN nci_proc_core_rsp (BT_HDR *p_msg)
+bool    nci_proc_core_rsp (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *pp, len, op_code;
-    BOOLEAN free = TRUE;
-    UINT8   *p_old = nfc_cb.last_cmd;
+    uint8_t *p;
+    uint8_t *pp, len, op_code;
+    bool    free = true;
+    uint8_t *p_old = nfc_cb.last_cmd;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     NFC_TRACE_DEBUG1 ("nci_proc_core_rsp opcode:0x%x", op_code);
@@ -61,12 +61,12 @@ BOOLEAN nci_proc_core_rsp (BT_HDR *p_msg)
     switch (op_code)
     {
     case NCI_MSG_CORE_RESET:
-        nfc_ncif_proc_reset_rsp (pp, FALSE);
+        nfc_ncif_proc_reset_rsp (pp, false);
         break;
 
     case NCI_MSG_CORE_INIT:
         nfc_ncif_proc_init_rsp (p_msg);
-        free = FALSE;
+        free = false;
         break;
 
     case NCI_MSG_CORE_GET_CONFIG:
@@ -102,14 +102,14 @@ BOOLEAN nci_proc_core_rsp (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_core_ntf (BT_HDR *p_msg)
+void nci_proc_core_ntf (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *pp, len, op_code;
-    UINT8   conn_id;
+    uint8_t *p;
+    uint8_t *pp, len, op_code;
+    uint8_t conn_id;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     NFC_TRACE_DEBUG1 ("nci_proc_core_ntf opcode:0x%x", op_code);
@@ -119,7 +119,7 @@ void nci_proc_core_ntf (BT_HDR *p_msg)
     switch (op_code)
     {
     case NCI_MSG_CORE_RESET:
-        nfc_ncif_proc_reset_rsp (pp, TRUE);
+        nfc_ncif_proc_reset_rsp (pp, true);
         break;
 
     case NCI_MSG_CORE_GEN_ERR_STATUS:
@@ -154,14 +154,14 @@ void nci_proc_core_ntf (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_rf_management_rsp (BT_HDR *p_msg)
+void nci_proc_rf_management_rsp (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *pp, len, op_code;
-    UINT8   *p_old = nfc_cb.last_cmd;
+    uint8_t *p;
+    uint8_t *pp, len, op_code;
+    uint8_t *p_old = nfc_cb.last_cmd;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     len = *pp++;
@@ -185,11 +185,11 @@ void nci_proc_rf_management_rsp (BT_HDR *p_msg)
         break;
 
     case NCI_MSG_RF_DEACTIVATE:
-        if (FALSE == nfa_dm_p2p_prio_logic (op_code, pp, NFA_DM_P2P_PRIO_RSP))
+        if (nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_RSP) == false)
         {
             return;
         }
-        nfc_ncif_proc_deactivate (*pp, *p_old, FALSE);
+        nfc_ncif_proc_deactivate (*pp, *p_old, false);
         break;
 
 #if (NFC_NFCEE_INCLUDED == TRUE)
@@ -225,13 +225,13 @@ void nci_proc_rf_management_rsp (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_rf_management_ntf (BT_HDR *p_msg)
+void nci_proc_rf_management_ntf (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *pp, len, op_code;
+    uint8_t *p;
+    uint8_t *pp, len, op_code;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     len = *pp++;
@@ -243,15 +243,15 @@ void nci_proc_rf_management_ntf (BT_HDR *p_msg)
         break;
 
     case NCI_MSG_RF_DEACTIVATE:
-        if (FALSE == nfa_dm_p2p_prio_logic (op_code, pp, NFA_DM_P2P_PRIO_NTF))
+        if (nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_NTF) == false)
         {
             return;
         }
-        nfc_ncif_proc_deactivate (NFC_STATUS_OK, *pp, TRUE);
+        nfc_ncif_proc_deactivate (NFC_STATUS_OK, *pp, true);
         break;
 
     case NCI_MSG_RF_INTF_ACTIVATED:
-        if (FALSE == nfa_dm_p2p_prio_logic (op_code, pp, NFA_DM_P2P_PRIO_NTF))
+        if (nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_NTF) == false)
         {
             return;
         }
@@ -301,20 +301,20 @@ void nci_proc_rf_management_ntf (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_ee_management_rsp (BT_HDR *p_msg)
+void nci_proc_ee_management_rsp (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *pp, len, op_code;
+    uint8_t *p;
+    uint8_t *pp, len, op_code;
     tNFC_RESPONSE_CBACK *p_cback = nfc_cb.p_resp_cback;
     tNFC_NFCEE_DISCOVER_REVT    nfcee_discover;
     tNFC_NFCEE_INFO_REVT        nfcee_info;
     tNFC_NFCEE_MODE_SET_REVT    mode_set;
     tNFC_RESPONSE   *p_evt = (tNFC_RESPONSE *) &nfcee_info;
     tNFC_RESPONSE_EVT event = NFC_NFCEE_INFO_REVT;
-    UINT8   *p_old = nfc_cb.last_cmd;
+    uint8_t *p_old = nfc_cb.last_cmd;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     NFC_TRACE_DEBUG1 ("nci_proc_ee_management_rsp opcode:0x%x", op_code);
@@ -361,21 +361,21 @@ void nci_proc_ee_management_rsp (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_ee_management_ntf (BT_HDR *p_msg)
+void nci_proc_ee_management_ntf (NFC_HDR *p_msg)
 {
-    UINT8                 *p;
-    UINT8                 *pp, len, op_code;
+    uint8_t               *p;
+    uint8_t               *pp, len, op_code;
     tNFC_RESPONSE_CBACK   *p_cback = nfc_cb.p_resp_cback;
     tNFC_NFCEE_INFO_REVT  nfcee_info;
     tNFC_RESPONSE         *p_evt   = (tNFC_RESPONSE *) &nfcee_info;
     tNFC_RESPONSE_EVT     event    = NFC_NFCEE_INFO_REVT;
-    UINT8                 xx;
-    UINT8                 yy;
-    UINT8                 ee_status;
+    uint8_t               xx;
+    uint8_t               yy;
+    uint8_t               ee_status;
     tNFC_NFCEE_TLV        *p_tlv;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     NFC_TRACE_DEBUG1 ("nci_proc_ee_management_ntf opcode:0x%x", op_code);
@@ -443,15 +443,15 @@ void nci_proc_ee_management_ntf (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_prop_rsp (BT_HDR *p_msg)
+void nci_proc_prop_rsp (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *p_evt;
-    UINT8   *pp, len, op_code;
+    uint8_t *p;
+    uint8_t *p_evt;
+    uint8_t *pp, len, op_code;
     tNFC_VS_CBACK   *p_cback = (tNFC_VS_CBACK *)nfc_cb.p_vsc_cback;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = p_evt = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = p_evt = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     len = *pp++;
@@ -470,15 +470,15 @@ void nci_proc_prop_rsp (BT_HDR *p_msg)
 ** Returns          void
 **
 *******************************************************************************/
-void nci_proc_prop_ntf (BT_HDR *p_msg)
+void nci_proc_prop_ntf (NFC_HDR *p_msg)
 {
-    UINT8   *p;
-    UINT8   *p_evt;
-    UINT8   *pp, len, op_code;
+    uint8_t *p;
+    uint8_t *p_evt;
+    uint8_t *pp, len, op_code;
     int i;
 
     /* find the start of the NCI message and parse the NCI header */
-    p   = p_evt = (UINT8 *) (p_msg + 1) + p_msg->offset;
+    p   = p_evt = (uint8_t *) (p_msg + 1) + p_msg->offset;
     pp  = p+1;
     NCI_MSG_PRS_HDR1 (pp, op_code);
     len = *pp++;

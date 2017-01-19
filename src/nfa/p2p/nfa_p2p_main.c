@@ -44,7 +44,7 @@ tNFA_P2P_CB nfa_p2p_cb;
 *****************************************************************************/
 
 /* event handler function type */
-static BOOLEAN nfa_p2p_evt_hdlr (BT_HDR *p_msg);
+static bool    nfa_p2p_evt_hdlr (NFC_HDR *p_msg);
 
 /* disable function type */
 static void nfa_p2p_sys_disable (void);
@@ -72,7 +72,7 @@ static const tNFA_SYS_REG nfa_p2p_sys_reg =
 #define NFA_P2P_NUM_ACTIONS  (NFA_P2P_LAST_EVT & 0x00ff)
 
 /* type for action functions */
-typedef BOOLEAN (*tNFA_P2P_ACTION) (tNFA_P2P_MSG *p_data);
+typedef bool    (*tNFA_P2P_ACTION) (tNFA_P2P_MSG *p_data);
 
 /* action function list */
 const tNFA_P2P_ACTION nfa_p2p_action[] =
@@ -201,7 +201,7 @@ static void nfa_p2p_update_active_listen_timeout_cback (TIMER_LIST_ENT *p_tle)
 static void nfa_p2p_update_active_listen (void)
 {
     tNFA_DM_DISC_TECH_PROTO_MASK p2p_listen_mask = 0;
-    BT_HDR *p_msg;
+    NFC_HDR *p_msg;
 
     P2P_TRACE_DEBUG1 ("nfa_p2p_update_active_listen (): listen_tech_mask_to_restore:0x%x",
                        nfa_p2p_cb.listen_tech_mask_to_restore);
@@ -252,7 +252,7 @@ static void nfa_p2p_update_active_listen (void)
                                                         nfa_p2p_discovery_cback);
 
     /* restart RF discovery to update RF technologies */
-    if ((p_msg = (BT_HDR *) GKI_getbuf (sizeof(BT_HDR))) != NULL)
+    if ((p_msg = (NFC_HDR *) GKI_getbuf (sizeof(NFC_HDR))) != NULL)
     {
         p_msg->event = NFA_P2P_INT_RESTART_RF_DISC_EVT;
         nfa_sys_sendmsg (p_msg);
@@ -269,7 +269,7 @@ static void nfa_p2p_update_active_listen (void)
 ** Returns          None
 **
 *******************************************************************************/
-void nfa_p2p_llcp_link_cback (UINT8 event, UINT8 reason)
+void nfa_p2p_llcp_link_cback (uint8_t event, uint8_t reason)
 {
     tNFA_LLCP_ACTIVATED     llcp_activated;
     tNFA_LLCP_DEACTIVATED   llcp_deactivated;
@@ -393,11 +393,11 @@ void nfa_p2p_activate_llcp (tNFC_DISCOVER *p_data)
         ||(p_data->activate.rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_A_ACTIVE)
         ||(p_data->activate.rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_F_ACTIVE)  )
     {
-        config.is_initiator = TRUE;
+        config.is_initiator = true;
     }
     else
     {
-        config.is_initiator = FALSE;
+        config.is_initiator = false;
     }
 
     if (  (p_data->activate.rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_A_ACTIVE)
@@ -405,11 +405,11 @@ void nfa_p2p_activate_llcp (tNFC_DISCOVER *p_data)
         ||(p_data->activate.rf_tech_param.mode == NFC_DISCOVERY_TYPE_LISTEN_A_ACTIVE)
         ||(p_data->activate.rf_tech_param.mode == NFC_DISCOVERY_TYPE_LISTEN_F_ACTIVE)  )
     {
-        nfa_p2p_cb.is_active_mode = TRUE;
+        nfa_p2p_cb.is_active_mode = true;
     }
     else
     {
-        nfa_p2p_cb.is_active_mode = FALSE;
+        nfa_p2p_cb.is_active_mode = false;
     }
 
     nfa_p2p_cb.is_initiator = config.is_initiator;
@@ -451,7 +451,7 @@ void nfa_p2p_deactivate_llcp (void)
 *******************************************************************************/
 void nfa_p2p_init (void)
 {
-    UINT8 xx;
+    uint8_t xx;
 
     P2P_TRACE_DEBUG0 ("nfa_p2p_init ()");
 
@@ -502,8 +502,8 @@ static void nfa_p2p_sys_disable (void)
 *******************************************************************************/
 void nfa_p2p_set_config (tNFA_DM_DISC_TECH_PROTO_MASK disc_mask)
 {
-    UINT8 wt, gen_bytes_len = LLCP_MAX_GEN_BYTES;
-    UINT8 params[LLCP_MAX_GEN_BYTES + 5], *p, length;
+    uint8_t wt, gen_bytes_len = LLCP_MAX_GEN_BYTES;
+    uint8_t params[LLCP_MAX_GEN_BYTES + 5], *p, length;
 
     P2P_TRACE_DEBUG0 ("nfa_p2p_set_config ()");
 
@@ -526,7 +526,7 @@ void nfa_p2p_set_config (tNFA_DM_DISC_TECH_PROTO_MASK disc_mask)
         p += gen_bytes_len;
         length = gen_bytes_len + 2;
 
-        nfa_dm_check_set_config (length, params, FALSE);
+        nfa_dm_check_set_config (length, params, false);
     }
 
     if (disc_mask & ( NFA_DM_DISC_MASK_LA_NFC_DEP
@@ -548,7 +548,7 @@ void nfa_p2p_set_config (tNFA_DM_DISC_TECH_PROTO_MASK disc_mask)
 
         length += 3;
 
-        nfa_dm_check_set_config (length, params, FALSE);
+        nfa_dm_check_set_config (length, params, false);
     }
 }
 
@@ -562,7 +562,7 @@ void nfa_p2p_set_config (tNFA_DM_DISC_TECH_PROTO_MASK disc_mask)
 ** Returns          void
 **
 *******************************************************************************/
-void nfa_p2p_enable_listening (tNFA_SYS_ID sys_id, BOOLEAN update_wks)
+void nfa_p2p_enable_listening (tNFA_SYS_ID sys_id, bool    update_wks)
 {
     tNFA_DM_DISC_TECH_PROTO_MASK p2p_listen_mask = 0;
 
@@ -570,11 +570,9 @@ void nfa_p2p_enable_listening (tNFA_SYS_ID sys_id, BOOLEAN update_wks)
                        sys_id, update_wks);
 
     if (sys_id == NFA_ID_P2P)
-        nfa_p2p_cb.is_p2p_listening = TRUE;
-    else if (sys_id == NFA_ID_CHO)
-        nfa_p2p_cb.is_cho_listening = TRUE;
+        nfa_p2p_cb.is_p2p_listening = true;
     else if (sys_id == NFA_ID_SNEP)
-        nfa_p2p_cb.is_snep_listening = TRUE;
+        nfa_p2p_cb.is_snep_listening = true;
 
     if (nfa_p2p_cb.dm_disc_handle != NFA_HANDLE_INVALID)
     {
@@ -621,24 +619,21 @@ void nfa_p2p_enable_listening (tNFA_SYS_ID sys_id, BOOLEAN update_wks)
 ** Returns          void
 **
 *******************************************************************************/
-void nfa_p2p_disable_listening (tNFA_SYS_ID sys_id, BOOLEAN update_wks)
+void nfa_p2p_disable_listening (tNFA_SYS_ID sys_id, bool    update_wks)
 {
 
     P2P_TRACE_DEBUG2 ("nfa_p2p_disable_listening ()  sys_id = %d, update_wks = %d",
                        sys_id, update_wks);
 
     if (sys_id == NFA_ID_P2P)
-        nfa_p2p_cb.is_p2p_listening = FALSE;
-    else if (sys_id == NFA_ID_CHO)
-        nfa_p2p_cb.is_cho_listening = FALSE;
+        nfa_p2p_cb.is_p2p_listening = false;
     else if (sys_id == NFA_ID_SNEP)
-        nfa_p2p_cb.is_snep_listening = FALSE;
+        nfa_p2p_cb.is_snep_listening = false;
 
     if (nfa_p2p_cb.dm_disc_handle != NFA_HANDLE_INVALID)
     {
-        if (  (nfa_p2p_cb.is_p2p_listening == FALSE)
-            &&(nfa_p2p_cb.is_cho_listening == FALSE)
-            &&(nfa_p2p_cb.is_snep_listening == FALSE)  )
+        if (  (nfa_p2p_cb.is_p2p_listening == false)
+            &&(nfa_p2p_cb.is_snep_listening == false)  )
         {
             nfa_p2p_cb.llcp_state    = NFA_P2P_LLCP_STATE_IDLE;
             nfa_p2p_cb.rf_disc_state = NFA_DM_RFST_IDLE;
@@ -688,11 +683,9 @@ void nfa_p2p_update_listen_tech (tNFA_TECHNOLOGY_MASK tech_mask)
 
         /* restart discovery without updating sub-module status */
         if (nfa_p2p_cb.is_p2p_listening)
-            nfa_p2p_enable_listening (NFA_ID_P2P, FALSE);
-        else if (nfa_p2p_cb.is_cho_listening)
-            nfa_p2p_enable_listening (NFA_ID_CHO, FALSE);
+            nfa_p2p_enable_listening (NFA_ID_P2P, false);
         else if (nfa_p2p_cb.is_snep_listening)
-            nfa_p2p_enable_listening (NFA_ID_SNEP, FALSE);
+            nfa_p2p_enable_listening (NFA_ID_SNEP, false);
     }
 }
 
@@ -706,10 +699,10 @@ void nfa_p2p_update_listen_tech (tNFA_TECHNOLOGY_MASK tech_mask)
 ** Returns          TRUE if p_msg needs to be deallocated
 **
 *******************************************************************************/
-static BOOLEAN nfa_p2p_evt_hdlr (BT_HDR *p_hdr)
+static bool    nfa_p2p_evt_hdlr (NFC_HDR *p_hdr)
 {
-    BOOLEAN delete_msg = TRUE;
-    UINT16  event;
+    bool    delete_msg = true;
+    uint16_t  event;
 
     tNFA_P2P_MSG *p_msg = (tNFA_P2P_MSG *)p_hdr;
 
@@ -772,7 +765,7 @@ static char *nfa_p2p_llcp_state_code (tNFA_P2P_LLCP_STATE state_code)
 ** Returns          string of event
 **
 *******************************************************************************/
-char *nfa_p2p_evt_code (UINT16 evt_code)
+char *nfa_p2p_evt_code (uint16_t evt_code)
 {
     switch (evt_code)
     {

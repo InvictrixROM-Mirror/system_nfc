@@ -33,10 +33,9 @@
 #include "bt_trace.h"
 #endif
 
-
-/* API macros for DLL (needed to export API functions from DLLs) */
-#define NFC_API         EXPORT_API
-#define LLCP_API        EXPORT_API
+#ifndef USERIAL_DEBUG
+#define USERIAL_DEBUG                       FALSE
+#endif
 
 /******************************************************************************
 **
@@ -364,7 +363,7 @@
 
 /* LLCP Maximum Information Unit (between LLCP_DEFAULT_MIU(128) and LLCP_MAX_MIU (2175)*/
 #ifndef LLCP_MIU
-#define LLCP_MIU                    (LLCP_POOL_BUF_SIZE - BT_HDR_SIZE - NCI_MSG_OFFSET_SIZE - NCI_DATA_HDR_SIZE - LLCP_PDU_HEADER_SIZE)
+#define LLCP_MIU                    (LLCP_POOL_BUF_SIZE - NFC_HDR_SIZE - NCI_MSG_OFFSET_SIZE - NCI_DATA_HDR_SIZE - LLCP_PDU_HEADER_SIZE)
 #endif
 
 /* Link Timeout, LTO */
@@ -585,39 +584,6 @@
 #define NFA_CE_LISTEN_INFO_MAX        5
 #endif
 
-#ifndef NFA_CHO_INCLUDED
-#define NFA_CHO_INCLUDED            FALSE /* Anddroid must use FALSE to exclude CHO */
-#endif
-
-/* MIU for CHO              */
-#ifndef NFA_CHO_MIU
-#define NFA_CHO_MIU                    499
-#endif
-
-/* Receiving Window for CHO */
-#ifndef NFA_CHO_RW
-#define NFA_CHO_RW                     4
-#endif
-
-/* Max number of alternative carrier information */
-#ifndef NFA_CHO_MAX_AC_INFO
-#define NFA_CHO_MAX_AC_INFO                 2
-#endif
-
-/* Max reference character length, it is up to 255 but it's RECOMMENDED short */
-#ifndef NFA_CHO_MAX_REF_NAME_LEN
-#define NFA_CHO_MAX_REF_NAME_LEN            8
-#endif
-
-/* Max auxiliary data count */
-#ifndef NFA_CHO_MAX_AUX_DATA_COUNT
-#define NFA_CHO_MAX_AUX_DATA_COUNT          2
-#endif
-
-#ifndef NFA_CHO_TEST_INCLUDED
-#define NFA_CHO_TEST_INCLUDED           FALSE
-#endif
-
 #ifndef NFA_SNEP_INCLUDED
 #define NFA_SNEP_INCLUDED               FALSE /* Android must use FALSE to exclude SNEP */
 #endif
@@ -672,7 +638,7 @@
 **  as the NFC stack.
 *****************************************************************************/
 #ifndef HAL_WRITE
-#define HAL_WRITE(p)    {nfc_cb.p_hal->write(p->len, (UINT8 *)(p+1) + p->offset); GKI_freebuf(p);}
+#define HAL_WRITE(p)    {nfc_cb.p_hal->write(p->len, (uint8_t *)(p+1) + p->offset); GKI_freebuf(p);}
 
 #ifdef NFC_HAL_SHARED_GKI
 

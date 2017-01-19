@@ -25,20 +25,6 @@
 
 #include "data_types.h"
 
-/* Define export prefixes for modules exported by HAL */
-#ifndef GKI_API
-#define GKI_API
-#endif
-
-#ifndef UDRV_API
-#define UDRV_API
-#endif
-
-#ifndef EXPORT_API
-#define EXPORT_API
-#endif
-
-
 /******************************************************************************
 **
 ** Task configuration
@@ -243,7 +229,7 @@
 #endif
 
 
-#if defined(GKI_DEBUG) && (GKI_DEBUG == TRUE)
+#if (GKI_DEBUG == TRUE)
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
@@ -280,7 +266,7 @@ extern "C"
 {
 #endif
 
-extern void LogMsg (UINT32 trace_set_mask, const char *fmt_str, ...);
+extern void LogMsg (uint32_t trace_set_mask, const char *fmt_str, ...);
 
 #ifdef __cplusplus
 }

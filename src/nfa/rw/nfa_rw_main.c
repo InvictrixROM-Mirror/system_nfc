@@ -58,7 +58,7 @@ const tNFA_RW_ACTION nfa_rw_action_tbl[] =
 ** Local function prototypes
 *****************************************************************************/
 #if (BT_TRACE_VERBOSE == TRUE)
-static char *nfa_rw_evt_2_str (UINT16 event);
+static char *nfa_rw_evt_2_str (uint16_t event);
 #endif
 
 /*******************************************************************************
@@ -121,7 +121,7 @@ void nfa_rw_sys_disable (void)
 ** Returns          void
 **
 *******************************************************************************/
-void nfa_rw_proc_disc_evt (tNFA_DM_RF_DISC_EVT event, tNFC_DISCOVER *p_data, BOOLEAN excl_rf_not_active)
+void nfa_rw_proc_disc_evt (tNFA_DM_RF_DISC_EVT event, tNFC_DISCOVER *p_data, bool    excl_rf_not_active)
 {
     tNFA_RW_MSG msg;
 
@@ -132,13 +132,13 @@ void nfa_rw_proc_disc_evt (tNFA_DM_RF_DISC_EVT event, tNFC_DISCOVER *p_data, BOO
         msg.activate_ntf.p_activate_params  = &p_data->activate;
         msg.activate_ntf.excl_rf_not_active = excl_rf_not_active;
 
-        nfa_rw_handle_event ((BT_HDR *) &msg);
+        nfa_rw_handle_event ((NFC_HDR *) &msg);
         break;
 
     case NFA_DM_RF_DISC_DEACTIVATED_EVT:
         msg.hdr.event = NFA_RW_DEACTIVATE_NTF_EVT;
 
-        nfa_rw_handle_event ((BT_HDR *) &msg);
+        nfa_rw_handle_event ((NFC_HDR *) &msg);
         break;
 
     default:
@@ -155,18 +155,18 @@ void nfa_rw_proc_disc_evt (tNFA_DM_RF_DISC_EVT event, tNFC_DISCOVER *p_data, BOO
 ** Returns          tNFA_STATUS
 **
 *******************************************************************************/
-tNFA_STATUS nfa_rw_send_raw_frame (BT_HDR *p_data)
+tNFA_STATUS nfa_rw_send_raw_frame (NFC_HDR *p_data)
 {
     tNFA_RW_MSG *p_msg;
 
-    if ((p_msg = (tNFA_RW_MSG *) GKI_getbuf ((UINT16) sizeof(tNFA_RW_MSG))) != NULL)
+    if ((p_msg = (tNFA_RW_MSG *) GKI_getbuf ((uint16_t) sizeof(tNFA_RW_MSG))) != NULL)
     {
         p_msg->hdr.event = NFA_RW_OP_REQUEST_EVT;
         p_msg->op_req.op = NFA_RW_OP_SEND_RAW_FRAME;
 
         p_msg->op_req.params.send_raw_frame.p_data = p_data;
 
-        if (nfa_rw_handle_event ((BT_HDR *) p_msg))
+        if (nfa_rw_handle_event ((NFC_HDR *) p_msg))
             GKI_freebuf (p_msg);
 
         return (NFA_STATUS_OK);
@@ -183,9 +183,9 @@ tNFA_STATUS nfa_rw_send_raw_frame (BT_HDR *p_data)
 ** Returns          TRUE if caller should free p_msg buffer
 **
 *******************************************************************************/
-BOOLEAN nfa_rw_handle_event(BT_HDR *p_msg)
+bool    nfa_rw_handle_event(NFC_HDR *p_msg)
 {
-    UINT16 act_idx;
+    uint16_t act_idx;
 
 #if (BT_TRACE_VERBOSE == TRUE)
     NFA_TRACE_EVENT3 ("nfa_rw_handle_event event: %s (0x%02x), flags: %08x", nfa_rw_evt_2_str (p_msg->event), p_msg->event, nfa_rw_cb.flags);
@@ -201,7 +201,7 @@ BOOLEAN nfa_rw_handle_event(BT_HDR *p_msg)
     else
     {
         NFA_TRACE_ERROR1 ("nfa_rw_handle_event: unhandled event 0x%02X", p_msg->event);
-        return TRUE;
+        return true;
     }
 }
 
@@ -214,7 +214,7 @@ BOOLEAN nfa_rw_handle_event(BT_HDR *p_msg)
 ** Description      convert nfa_rw evt to string
 **
 *******************************************************************************/
-static char *nfa_rw_evt_2_str (UINT16 event)
+static char *nfa_rw_evt_2_str (uint16_t event)
 {
     switch (event)
     {

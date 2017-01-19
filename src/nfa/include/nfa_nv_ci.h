@@ -34,16 +34,16 @@
 /* Read Ready Event */
 typedef struct
 {
-    BT_HDR            hdr;
+    NFC_HDR            hdr;
     tNFA_NV_CO_STATUS status;
     int               fd;
-    UINT16            num_read;
+    uint16_t          num_read;
 } tNFA_NV_CI_READ_EVT;
 
 /* Write Ready Event */
 typedef struct
 {
-    BT_HDR            hdr;
+    NFC_HDR            hdr;
     tNFA_NV_CO_STATUS status;
     int               fd;
 } tNFA_NV_CI_WRITE_EVT;
@@ -74,7 +74,7 @@ extern "C"
 ** Returns          void
 **
 *******************************************************************************/
-NFC_API extern void nfa_nv_ci_write (tNFA_NV_CO_STATUS status);
+extern void nfa_nv_ci_write (tNFA_NV_CO_STATUS status);
 
 /*******************************************************************************
 **
@@ -96,9 +96,9 @@ NFC_API extern void nfa_nv_ci_write (tNFA_NV_CO_STATUS status);
 ** Returns          void
 **
 *******************************************************************************/
-NFC_API extern void nfa_nv_ci_read (UINT16            num_bytes_read,
-                                    tNFA_NV_CO_STATUS status,
-                                    UINT8             block);
+extern void nfa_nv_ci_read (uint16_t          num_bytes_read,
+                            tNFA_NV_CO_STATUS status,
+                            uint8_t           block);
 
 
 #ifdef __cplusplus

@@ -39,7 +39,7 @@ enum
     NFA_RW_PRES_CHK_RB_CH0,     /* ReadBinary on Channel 0          */
     NFA_RW_PRES_CHK_RB_CH3      /* ReadBinary on Channel 3          */
 };
-typedef UINT8 tNFA_RW_PRES_CHK_OPTION;
+typedef uint8_t tNFA_RW_PRES_CHK_OPTION;
 
 /*****************************************************************************
 **  NFA T3T Constants and definitions
@@ -48,8 +48,8 @@ typedef UINT8 tNFA_RW_PRES_CHK_OPTION;
 /* Block descriptor. (For non-NDEF read/write */
 typedef struct
 {
-    UINT16  service_code;       /* Service code for the block   */
-    UINT16  block_number;       /* Block number.                */
+    uint16_t  service_code;       /* Service code for the block   */
+    uint16_t  block_number;       /* Block number.                */
 } tNFA_T3T_BLOCK_DESC;
 
 
@@ -85,7 +85,7 @@ extern "C"
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwDetectNDef (void);
+extern tNFA_STATUS NFA_RwDetectNDef (void);
 
 /*******************************************************************************
 **
@@ -113,7 +113,7 @@ NFC_API extern tNFA_STATUS NFA_RwDetectNDef (void);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwReadNDef (void);
+extern tNFA_STATUS NFA_RwReadNDef (void);
 
 /*******************************************************************************
 **
@@ -136,7 +136,7 @@ NFC_API extern tNFA_STATUS NFA_RwReadNDef (void);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwWriteNDef (UINT8 *p_data, UINT32 len);
+extern tNFA_STATUS NFA_RwWriteNDef (uint8_t *p_data, uint32_t len);
 
 
 /*****************************************************************************
@@ -155,7 +155,7 @@ NFC_API extern tNFA_STATUS NFA_RwWriteNDef (UINT8 *p_data, UINT32 len);
 **                  NFA_STATUS_FAILED otherwise
 **
 *****************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwPresenceCheck (tNFA_RW_PRES_CHK_OPTION option);
+extern tNFA_STATUS NFA_RwPresenceCheck (tNFA_RW_PRES_CHK_OPTION option);
 
 /*****************************************************************************
 **
@@ -172,7 +172,7 @@ NFC_API extern tNFA_STATUS NFA_RwPresenceCheck (tNFA_RW_PRES_CHK_OPTION option);
 **                  NFA_STATUS_FAILED otherwise
 **
 *****************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwFormatTag (void);
+extern tNFA_STATUS NFA_RwFormatTag (void);
 
 /*******************************************************************************
 ** LEGACY / PROPRIETARY TAG READ AND WRITE APIs
@@ -212,7 +212,7 @@ NFC_API extern tNFA_STATUS NFA_RwFormatTag (void);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwLocateTlv (UINT8 tlv_type);
+extern tNFA_STATUS NFA_RwLocateTlv (uint8_t tlv_type);
 
 /*******************************************************************************
 **
@@ -231,7 +231,7 @@ NFC_API extern tNFA_STATUS NFA_RwLocateTlv (UINT8 tlv_type);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwSetTagReadOnly (BOOLEAN b_hard_lock);
+extern tNFA_STATUS NFA_RwSetTagReadOnly (bool    b_hard_lock);
 
 /*******************************************************************************
 **
@@ -250,7 +250,7 @@ NFC_API extern tNFA_STATUS NFA_RwSetTagReadOnly (BOOLEAN b_hard_lock);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tRid (void);
+extern tNFA_STATUS NFA_RwT1tRid (void);
 
 /*******************************************************************************
 **
@@ -269,7 +269,7 @@ NFC_API extern tNFA_STATUS NFA_RwT1tRid (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tReadAll (void);
+extern tNFA_STATUS NFA_RwT1tReadAll (void);
 
 /*******************************************************************************
 **
@@ -288,7 +288,7 @@ NFC_API extern tNFA_STATUS NFA_RwT1tReadAll (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tRead (UINT8 block_number, UINT8 index);
+extern tNFA_STATUS NFA_RwT1tRead (uint8_t block_number, uint8_t index);
 
 /*******************************************************************************
 **
@@ -307,10 +307,10 @@ NFC_API extern tNFA_STATUS NFA_RwT1tRead (UINT8 block_number, UINT8 index);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tWrite (UINT8    block_number,
-                                           UINT8    index,
-                                           UINT8    data,
-                                           BOOLEAN  b_erase);
+extern tNFA_STATUS NFA_RwT1tWrite (uint8_t  block_number,
+                                   uint8_t  index,
+                                   uint8_t  data,
+                                   bool     b_erase);
 
 /*******************************************************************************
 **
@@ -329,7 +329,7 @@ NFC_API extern tNFA_STATUS NFA_RwT1tWrite (UINT8    block_number,
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tReadSeg (UINT8 segment_number);
+extern tNFA_STATUS NFA_RwT1tReadSeg (uint8_t segment_number);
 
 /*******************************************************************************
 **
@@ -348,7 +348,7 @@ NFC_API extern tNFA_STATUS NFA_RwT1tReadSeg (UINT8 segment_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tRead8 (UINT8 block_number);
+extern tNFA_STATUS NFA_RwT1tRead8 (uint8_t block_number);
 
 /*******************************************************************************
 **
@@ -367,9 +367,9 @@ NFC_API extern tNFA_STATUS NFA_RwT1tRead8 (UINT8 block_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT1tWrite8 (UINT8   block_number,
-                                            UINT8  *p_data,
-                                            BOOLEAN b_erase);
+extern tNFA_STATUS NFA_RwT1tWrite8 (uint8_t block_number,
+                                    uint8_t  *p_data,
+                                    bool    b_erase);
 
 /*******************************************************************************
 **
@@ -388,7 +388,7 @@ NFC_API extern tNFA_STATUS NFA_RwT1tWrite8 (UINT8   block_number,
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT2tRead (UINT8 block_number);
+extern tNFA_STATUS NFA_RwT2tRead (uint8_t block_number);
 
 /*******************************************************************************
 **
@@ -406,7 +406,7 @@ NFC_API extern tNFA_STATUS NFA_RwT2tRead (UINT8 block_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT2tWrite (UINT8 block_number,  UINT8 *p_data);
+extern tNFA_STATUS NFA_RwT2tWrite (uint8_t block_number,  uint8_t *p_data);
 
 /*******************************************************************************
 **
@@ -424,7 +424,7 @@ NFC_API extern tNFA_STATUS NFA_RwT2tWrite (UINT8 block_number,  UINT8 *p_data);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT2tSectorSelect (UINT8 sector_number);
+extern tNFA_STATUS NFA_RwT2tSectorSelect (uint8_t sector_number);
 
 /*******************************************************************************
 **
@@ -443,8 +443,8 @@ NFC_API extern tNFA_STATUS NFA_RwT2tSectorSelect (UINT8 sector_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT3tRead (UINT8                num_blocks,
-                                          tNFA_T3T_BLOCK_DESC *t3t_blocks);
+extern tNFA_STATUS NFA_RwT3tRead (uint8_t              num_blocks,
+                                  tNFA_T3T_BLOCK_DESC *t3t_blocks);
 
 /*******************************************************************************
 **
@@ -462,9 +462,9 @@ NFC_API extern tNFA_STATUS NFA_RwT3tRead (UINT8                num_blocks,
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwT3tWrite (UINT8                num_blocks,
-                                           tNFA_T3T_BLOCK_DESC *t3t_blocks,
-                                           UINT8               *p_data);
+extern tNFA_STATUS NFA_RwT3tWrite (uint8_t              num_blocks,
+                                   tNFA_T3T_BLOCK_DESC *t3t_blocks,
+                                   uint8_t             *p_data);
 
 /*******************************************************************************
 **
@@ -483,7 +483,7 @@ NFC_API extern tNFA_STATUS NFA_RwT3tWrite (UINT8                num_blocks,
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93Inventory (BOOLEAN afi_present, UINT8 afi, UINT8 *p_uid);
+extern tNFA_STATUS NFA_RwI93Inventory (bool    afi_present, uint8_t afi, uint8_t *p_uid);
 
 /*******************************************************************************
 **
@@ -501,7 +501,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93Inventory (BOOLEAN afi_present, UINT8 afi, U
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93StayQuiet (void);
+extern tNFA_STATUS NFA_RwI93StayQuiet (void);
 
 /*******************************************************************************
 **
@@ -520,7 +520,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93StayQuiet (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93ReadSingleBlock (UINT8 block_number);
+extern tNFA_STATUS NFA_RwI93ReadSingleBlock (uint8_t block_number);
 
 /*******************************************************************************
 **
@@ -538,8 +538,8 @@ NFC_API extern tNFA_STATUS NFA_RwI93ReadSingleBlock (UINT8 block_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93WriteSingleBlock (UINT8 block_number,
-                                                      UINT8 *p_data);
+extern tNFA_STATUS NFA_RwI93WriteSingleBlock (uint8_t block_number,
+                                              uint8_t *p_data);
 
 /*******************************************************************************
 **
@@ -557,7 +557,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93WriteSingleBlock (UINT8 block_number,
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93LockBlock (UINT8 block_number);
+extern tNFA_STATUS NFA_RwI93LockBlock (uint8_t block_number);
 
 /*******************************************************************************
 **
@@ -576,8 +576,8 @@ NFC_API extern tNFA_STATUS NFA_RwI93LockBlock (UINT8 block_number);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93ReadMultipleBlocks (UINT8  first_block_number,
-                                                        UINT16 number_blocks);
+extern tNFA_STATUS NFA_RwI93ReadMultipleBlocks (uint8_t  first_block_number,
+                                                uint16_t number_blocks);
 
 /*******************************************************************************
 **
@@ -595,9 +595,9 @@ NFC_API extern tNFA_STATUS NFA_RwI93ReadMultipleBlocks (UINT8  first_block_numbe
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93WriteMultipleBlocks (UINT8  first_block_number,
-                                                         UINT16 number_blocks,
-                                                         UINT8  *p_data);
+extern tNFA_STATUS NFA_RwI93WriteMultipleBlocks (uint8_t  first_block_number,
+                                                 uint16_t number_blocks,
+                                                 uint8_t  *p_data);
 
 /*******************************************************************************
 **
@@ -620,7 +620,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93WriteMultipleBlocks (UINT8  first_block_numb
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93Select (UINT8 *p_uid);
+extern tNFA_STATUS NFA_RwI93Select (uint8_t *p_uid);
 
 /*******************************************************************************
 **
@@ -638,7 +638,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93Select (UINT8 *p_uid);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93ResetToReady (void);
+extern tNFA_STATUS NFA_RwI93ResetToReady (void);
 
 /*******************************************************************************
 **
@@ -656,7 +656,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93ResetToReady (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93WriteAFI (UINT8 afi);
+extern tNFA_STATUS NFA_RwI93WriteAFI (uint8_t afi);
 
 /*******************************************************************************
 **
@@ -674,7 +674,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93WriteAFI (UINT8 afi);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93LockAFI (void);
+extern tNFA_STATUS NFA_RwI93LockAFI (void);
 
 /*******************************************************************************
 **
@@ -692,7 +692,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93LockAFI (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93WriteDSFID (UINT8 dsfid);
+extern tNFA_STATUS NFA_RwI93WriteDSFID (uint8_t dsfid);
 
 /*******************************************************************************
 **
@@ -710,7 +710,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93WriteDSFID (UINT8 dsfid);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93LockDSFID (void);
+extern tNFA_STATUS NFA_RwI93LockDSFID (void);
 
 /*******************************************************************************
 **
@@ -729,7 +729,7 @@ NFC_API extern tNFA_STATUS NFA_RwI93LockDSFID (void);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93GetSysInfo (UINT8 *p_uid);
+extern tNFA_STATUS NFA_RwI93GetSysInfo (uint8_t *p_uid);
 
 /*******************************************************************************
 **
@@ -748,8 +748,8 @@ NFC_API extern tNFA_STATUS NFA_RwI93GetSysInfo (UINT8 *p_uid);
 **      NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_RwI93GetMultiBlockSecurityStatus (UINT8  first_block_number,
-                                                                 UINT16 number_blocks);
+extern tNFA_STATUS NFA_RwI93GetMultiBlockSecurityStatus (uint8_t  first_block_number,
+                                                         uint16_t number_blocks);
 
 #ifdef __cplusplus
 }

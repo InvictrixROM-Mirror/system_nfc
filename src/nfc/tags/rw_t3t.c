@@ -72,7 +72,7 @@ enum
 };
 
 /* RW_CBACK events corresponding to API comands */
-const UINT8 rw_t3t_api_res_evt[RW_T3T_CMD_MAX] =
+const uint8_t rw_t3t_api_res_evt[RW_T3T_CMD_MAX] =
 {
     RW_T3T_NDEF_DETECT_EVT,         /* RW_T3T_CMD_DETECT_NDEF */
     RW_T3T_CHECK_CPLT_EVT,          /* RW_T3T_CMD_CHECK_NDEF  */
@@ -96,11 +96,6 @@ enum
 /* Sub-states */
 enum
 {
-    /* Sub states for getting system codes */
-    RW_T3T_GET_SC_SST_POLL_WILDCARD,        /* Waiting for wilcard poll response */
-    RW_T3T_GET_SC_SST_POLL_NDEF,            /* Waiting for NDEF poll response */
-    RW_T3T_GET_SC_SST_REQUEST_SC,           /* Waiting for REQUEST_SYSTEM_CODE response */
-
     /* Sub states for formatting Felica-Lite */
     RW_T3T_FMT_SST_POLL_FELICA_LITE,        /* Waiting for POLL Felica-Lite response (for formatting) */
     RW_T3T_FMT_SST_CHECK_MC_BLK,            /* Waiting for Felica-Lite MC (MemoryControl) block-read to complete */
@@ -115,21 +110,21 @@ enum
 };
 
 #if (BT_TRACE_VERBOSE == TRUE)
-static char *rw_t3t_cmd_str (UINT8 cmd_id);
-static char *rw_t3t_state_str (UINT8 state_id);
+static char *rw_t3t_cmd_str (uint8_t cmd_id);
+static char *rw_t3t_state_str (uint8_t state_id);
 #endif
 
 
 /* Local static functions */
-static void rw_t3t_update_ndef_flag (UINT8 *p_flag);
-static tNFC_STATUS rw_t3t_unselect (UINT8 peer_nfcid2[]);
-static BT_HDR *rw_t3t_get_cmd_buf (void);
-static tNFC_STATUS rw_t3t_send_to_lower (BT_HDR *p_msg);
+static void rw_t3t_update_ndef_flag (uint8_t *p_flag);
+static tNFC_STATUS rw_t3t_unselect (uint8_t peer_nfcid2[]);
+static NFC_HDR *rw_t3t_get_cmd_buf (void);
+static tNFC_STATUS rw_t3t_send_to_lower (NFC_HDR *p_msg);
 static void rw_t3t_handle_get_system_codes_cplt (void);
-static void rw_t3t_handle_get_sc_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf);
-static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf);
-static void rw_t3t_handle_fmt_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf);
-static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf);
+static void rw_t3t_handle_get_sc_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf);
+static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf);
+static void rw_t3t_handle_fmt_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf);
+static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf);
 
 
 /* Default NDEF attribute information block (used when formatting Felica-Lite tags) */
@@ -144,7 +139,7 @@ static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT
                                                             T3T_MSG_NDEF_WRITEF_OFF +               \
                                                             T3T_MSG_NDEF_RWFLAG_RW) & 0xFFFF)
 
-const UINT8 rw_t3t_default_attrib_info[T3T_MSG_BLOCKSIZE] =
+const uint8_t rw_t3t_default_attrib_info[T3T_MSG_BLOCKSIZE] =
 {
     T3T_MSG_NDEF_VERSION,                   /* Ver                          */
     RW_T3T_DEFAULT_FELICALITE_NBR,          /* NBr (max block reads per cmd)*/
@@ -162,7 +157,7 @@ const UINT8 rw_t3t_default_attrib_info[T3T_MSG_BLOCKSIZE] =
 };
 
 /* This is (T/t3t * 4^E) , E is the index of the array. The unit is .0001 ms */
-static const UINT32 rw_t3t_mrti_base [] =
+static const uint32_t rw_t3t_mrti_base [] =
 {
     302,
     1208,
@@ -180,11 +175,11 @@ static const UINT32 rw_t3t_mrti_base [] =
 ** Returns          timeout value in ticks
 **
 *******************************************************************************/
-static UINT32 rw_t3t_check_timeout (UINT16 num_blocks)
+static uint32_t rw_t3t_check_timeout (uint16_t num_blocks)
 {
     tRW_T3T_CB  *p_cb    = &rw_cb.tcb.t3t;
-    UINT32      timeout;
-    UINT32      extra;
+    uint32_t    timeout;
+    uint32_t    extra;
 
     timeout = (p_cb->check_tout_a + num_blocks * p_cb->check_tout_b)*QUICK_TIMER_TICKS_PER_SEC/1000000;
     /* allow some extra time for driver */
@@ -203,11 +198,11 @@ static UINT32 rw_t3t_check_timeout (UINT16 num_blocks)
 ** Returns          timeout value in ticks
 **
 *******************************************************************************/
-static UINT32 rw_t3t_update_timeout (UINT16 num_blocks)
+static uint32_t rw_t3t_update_timeout (uint16_t num_blocks)
 {
     tRW_T3T_CB  *p_cb    = &rw_cb.tcb.t3t;
-    UINT32      timeout;
-    UINT32      extra;
+    uint32_t    timeout;
+    uint32_t    extra;
 
     timeout = (p_cb->update_tout_a + num_blocks * p_cb->update_tout_b)*QUICK_TIMER_TICKS_PER_SEC/1000000;
     /* allow some extra time for driver */
@@ -228,15 +223,15 @@ static UINT32 rw_t3t_update_timeout (UINT16 num_blocks)
 void rw_t3t_process_error (tNFC_STATUS status)
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
-    UINT8 evt;
+    uint8_t evt;
     tRW_DATA evt_data;
-    BT_HDR *p_cmd_buf;
+    NFC_HDR *p_cmd_buf;
 
     if (p_cb->rw_state == RW_T3T_STATE_COMMAND_PENDING)
     {
         if (p_cb->cur_cmd == RW_T3T_CMD_GET_SYSTEM_CODES)
         {
-            /* For GetSystemCode: either tag did not respond to requested POLL, or REQUEST_SYSTEM_CODE command */
+            /* For GetSystemCode: tag did not respond to requested POLL */
             rw_t3t_handle_get_system_codes_cplt ();
             return;
         }
@@ -251,7 +246,7 @@ void rw_t3t_process_error (tNFC_STATUS status)
             /* allocate a new buffer for message */
             if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
             {
-                memcpy (p_cmd_buf, p_cb->p_cur_cmd_buf, sizeof (BT_HDR) + p_cb->p_cur_cmd_buf->offset + p_cb->p_cur_cmd_buf->len);
+                memcpy (p_cmd_buf, p_cb->p_cur_cmd_buf, sizeof (NFC_HDR) + p_cb->p_cur_cmd_buf->offset + p_cb->p_cur_cmd_buf->len);
 
                 if (rw_t3t_send_to_lower (p_cmd_buf) == NFC_STATUS_OK)
                 {
@@ -271,7 +266,7 @@ void rw_t3t_process_error (tNFC_STATUS status)
             RW_TRACE_DEBUG1 ("T3T maximum retransmission attempts reached (%i)", RW_MAX_RETRIES);
         }
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
+#if (RW_STATS_INCLUDED == TRUE)
         /* update failure count */
         rw_main_update_fail_stats ();
 #endif  /* RW_STATS_INCLUDED */
@@ -325,7 +320,7 @@ void rw_t3t_start_poll_timer (tRW_T3T_CB *p_cb)
 ** Returns          none
 **
 *******************************************************************************/
-void rw_t3t_handle_nci_poll_ntf (UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf)
+void rw_t3t_handle_nci_poll_ntf (uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf)
 {
     tRW_DATA evt_data;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -395,7 +390,7 @@ void rw_t3t_handle_get_system_codes_cplt (void)
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
     tRW_DATA evt_data;
-    UINT8 i;
+    uint8_t i;
 
     evt_data.t3t_sc.status = NFC_STATUS_OK;
     evt_data.t3t_sc.num_system_codes = p_cb->num_system_codes;
@@ -561,7 +556,7 @@ void rw_t3t_process_frame_error (void)
     RW_TRACE_ERROR2 ("T3T frame error. state=0x%02X cur_cmd=0x%02X", rw_cb.tcb.t3t.rw_state, rw_cb.tcb.t3t.cur_cmd);
 #endif
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
+#if (RW_STATS_INCLUDED == TRUE)
     /* Update stats */
     rw_main_update_crc_error_stats ();
 #endif  /* RW_STATS_INCLUDED */
@@ -579,24 +574,25 @@ void rw_t3t_process_frame_error (void)
 ** Returns          status of the send
 **
 *******************************************************************************/
-tNFC_STATUS rw_t3t_send_to_lower (BT_HDR *p_msg)
+tNFC_STATUS rw_t3t_send_to_lower (NFC_HDR *p_msg)
 {
-    UINT8 *p;
+    uint8_t *p;
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
-    BOOLEAN is_retry;
+#if (RW_STATS_INCLUDED == TRUE)
+    bool    is_retry;
     /* Update stats */
-    rw_main_update_tx_stats (p_msg->len, ((rw_cb.cur_retry==0) ? FALSE : TRUE));
+    rw_main_update_tx_stats (p_msg->len,
+			     ((rw_cb.cur_retry == 0) ? false : true));
 #endif  /* RW_STATS_INCLUDED */
 
     /* Set NFC-F SoD field (payload len + 1) */
     p_msg->offset -= 1;         /* Point to SoD field */
-    p = (UINT8 *) (p_msg+1) + p_msg->offset;
+    p = (uint8_t *) (p_msg+1) + p_msg->offset;
     UINT8_TO_STREAM (p, (p_msg->len+1));
     p_msg->len += 1;            /* Increment len to include SoD */
 
 #if (BT_TRACE_PROTOCOL == TRUE)
-    DispT3TagMessage (p_msg, FALSE);
+    DispT3TagMessage (p_msg, false);
 #endif
 
     return (NFC_SendData (NFC_RF_CONN_ID, p_msg));
@@ -608,14 +604,14 @@ tNFC_STATUS rw_t3t_send_to_lower (BT_HDR *p_msg)
 **
 ** Description      Get a buffer for sending T3T messages
 **
-** Returns          BT_HDR *
+** Returns          NFC_HDR *
 **
 *****************************************************************************/
-BT_HDR *rw_t3t_get_cmd_buf (void)
+NFC_HDR *rw_t3t_get_cmd_buf (void)
 {
-    BT_HDR *p_cmd_buf;
+    NFC_HDR *p_cmd_buf;
 
-    if ((p_cmd_buf = (BT_HDR *) GKI_getpoolbuf (NFC_RW_POOL_ID)) != NULL)
+    if ((p_cmd_buf = (NFC_HDR *) GKI_getpoolbuf (NFC_RW_POOL_ID)) != NULL)
     {
         /* Reserve offset for NCI_DATA_HDR and NFC-F Sod (LEN) field */
         p_cmd_buf->offset = NCI_MSG_OFFSET_SIZE + NCI_DATA_HDR_SIZE + 1;
@@ -634,13 +630,13 @@ BT_HDR *rw_t3t_get_cmd_buf (void)
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_send_cmd (tRW_T3T_CB *p_cb, UINT8 rw_t3t_cmd, BT_HDR *p_cmd_buf, UINT32 timeout_ticks)
+tNFC_STATUS rw_t3t_send_cmd (tRW_T3T_CB *p_cb, uint8_t rw_t3t_cmd, NFC_HDR *p_cmd_buf, uint32_t timeout_ticks)
 {
     tNFC_STATUS retval;
 
     /* Indicate first attempt to send command, back up cmd buffer in case needed for retransmission */
     rw_cb.cur_retry = 0;
-    memcpy (p_cb->p_cur_cmd_buf, p_cmd_buf, sizeof (BT_HDR) + p_cmd_buf->offset + p_cmd_buf->len);
+    memcpy (p_cb->p_cur_cmd_buf, p_cmd_buf, sizeof (NFC_HDR) + p_cmd_buf->offset + p_cmd_buf->len);
 
     p_cb->cur_cmd = rw_t3t_cmd;
     p_cb->cur_tout = timeout_ticks;
@@ -670,20 +666,20 @@ tNFC_STATUS rw_t3t_send_cmd (tRW_T3T_CB *p_cb, UINT8 rw_t3t_cmd, BT_HDR *p_cmd_b
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_send_update_ndef_attribute_cmd (tRW_T3T_CB *p_cb, BOOLEAN write_in_progress)
+tNFC_STATUS rw_t3t_send_update_ndef_attribute_cmd (tRW_T3T_CB *p_cb, bool    write_in_progress)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
-    BT_HDR *p_cmd_buf;
-    UINT8 *p_cmd_start, *p;
-    UINT16 checksum, i;
-    UINT8 write_f;
-    UINT32 ln;
-    UINT8 *p_ndef_attr_info_start;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p_cmd_start, *p;
+    uint16_t checksum, i;
+    uint8_t write_f;
+    uint32_t ln;
+    uint8_t *p_ndef_attr_info_start;
 
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start  = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = p_cmd_start  = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
         /* Add UPDATE opcode to message  */
         UINT8_TO_STREAM (p, T3T_MSG_OPC_UPDATE_CMD);
@@ -738,7 +734,7 @@ tNFC_STATUS rw_t3t_send_update_ndef_attribute_cmd (tRW_T3T_CB *p_cb, BOOLEAN wri
 
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         retval = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_UPDATE_NDEF, p_cmd_buf, rw_t3t_update_timeout(1));
@@ -763,30 +759,30 @@ tNFC_STATUS rw_t3t_send_update_ndef_attribute_cmd (tRW_T3T_CB *p_cb, BOOLEAN wri
 tNFC_STATUS rw_t3t_send_next_ndef_update_cmd (tRW_T3T_CB *p_cb)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
-    UINT16 block_id;
-    UINT16 first_block_to_write;
-    UINT16 ndef_blocks_to_write, ndef_blocks_remaining;
-    UINT32 ndef_bytes_remaining, ndef_padding = 0;
-    UINT8 flags = 0;
-    UINT8 *p_cur_ndef_src_offset;
-    BT_HDR *p_cmd_buf;
-    UINT8 *p_cmd_start, *p;
-    UINT8 blocks_per_update;
-    UINT32 timeout;
+    uint16_t block_id;
+    uint16_t first_block_to_write;
+    uint16_t ndef_blocks_to_write, ndef_blocks_remaining;
+    uint32_t ndef_bytes_remaining, ndef_padding = 0;
+    uint8_t flags = 0;
+    uint8_t *p_cur_ndef_src_offset;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p_cmd_start, *p;
+    uint8_t blocks_per_update;
+    uint32_t timeout;
 
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start  = (UINT8 *) (p_cmd_buf + 1) + p_cmd_buf->offset;
+        p = p_cmd_start  = (uint8_t *) (p_cmd_buf + 1) + p_cmd_buf->offset;
 
         /* Calculate number of ndef bytes remaining to write */
         ndef_bytes_remaining = p_cb->ndef_msg_len - p_cb->ndef_msg_bytes_sent;
 
         /* Calculate number of blocks remaining to write */
-        ndef_blocks_remaining = (UINT16) ((ndef_bytes_remaining+15) >> 4);      /* ndef blocks remaining (rounded upward) */
+        ndef_blocks_remaining = (uint16_t) ((ndef_bytes_remaining+15) >> 4);      /* ndef blocks remaining (rounded upward) */
 
         /* Calculate first NDEF block ID for this UPDATE command */
-        first_block_to_write = (UINT16) ((p_cb->ndef_msg_bytes_sent >> 4) + 1);
+        first_block_to_write = (uint16_t) ((p_cb->ndef_msg_bytes_sent >> 4) + 1);
 
         /* Calculate max number of blocks per write. */
         if ((first_block_to_write + RW_T3T_MAX_NDEF_BLOCKS_PER_UPDATE_1_BYTE_FORMAT) < 0x100)
@@ -869,7 +865,7 @@ tNFC_STATUS rw_t3t_send_next_ndef_update_cmd (tRW_T3T_CB *p_cb)
 
 
         ARRAY_TO_STREAM (p, p_cur_ndef_src_offset, (ndef_blocks_to_write * 16));
-        p_cb->ndef_msg_bytes_sent += ((UINT32) ndef_blocks_to_write * 16);
+        p_cb->ndef_msg_bytes_sent += ((uint32_t) ndef_blocks_to_write * 16);
 
         if (flags & RW_T3T_FL_PADDING)
         {
@@ -884,7 +880,7 @@ tNFC_STATUS rw_t3t_send_next_ndef_update_cmd (tRW_T3T_CB *p_cb)
         }
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         retval = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_UPDATE_NDEF, p_cmd_buf, timeout);
@@ -911,25 +907,25 @@ tNFC_STATUS rw_t3t_send_next_ndef_update_cmd (tRW_T3T_CB *p_cb)
 tNFC_STATUS rw_t3t_send_next_ndef_check_cmd (tRW_T3T_CB *p_cb)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
-    UINT16 block_id;
-    UINT16 ndef_blocks_remaining, first_block_to_read, cur_blocks_to_read;
-    UINT32 ndef_bytes_remaining;
-    BT_HDR *p_cmd_buf;
-    UINT8 *p_cmd_start, *p;
+    uint16_t block_id;
+    uint16_t ndef_blocks_remaining, first_block_to_read, cur_blocks_to_read;
+    uint32_t ndef_bytes_remaining;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p_cmd_start, *p;
 
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start  = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = p_cmd_start  = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
         /* Calculate number of ndef bytes remaining to read */
         ndef_bytes_remaining = p_cb->ndef_attrib.ln - p_cb->ndef_rx_offset;
 
         /* Calculate number of blocks remaining to read */
-        ndef_blocks_remaining = (UINT16) ((ndef_bytes_remaining+15) >> 4);      /* ndef blocks remaining (rounded upward) */
+        ndef_blocks_remaining = (uint16_t) ((ndef_bytes_remaining+15) >> 4);      /* ndef blocks remaining (rounded upward) */
 
         /* Calculate first NDEF block ID */
-        first_block_to_read = (UINT16) ((p_cb->ndef_rx_offset >> 4) + 1);
+        first_block_to_read = (uint16_t) ((p_cb->ndef_rx_offset >> 4) + 1);
 
         /* Check if remaining blocks can fit into one CHECK command */
         if (ndef_blocks_remaining <= p_cb->ndef_attrib.nbr)
@@ -943,7 +939,7 @@ tNFC_STATUS rw_t3t_send_next_ndef_check_cmd (tRW_T3T_CB *p_cb)
         {
             /* Remaining blocks cannot fit into one CHECK command */
             cur_blocks_to_read = p_cb->ndef_attrib.nbr;            /* Read maximum number of blocks allowed by the peer */
-            p_cb->ndef_rx_readlen = ((UINT32) p_cb->ndef_attrib.nbr * 16);
+            p_cb->ndef_rx_readlen = ((uint32_t) p_cb->ndef_attrib.nbr * 16);
         }
 
         RW_TRACE_DEBUG3 ("rw_t3t_send_next_ndef_check_cmd: bytes_remaining: %i, cur_blocks_to_read: %i, is_final: %i",
@@ -989,7 +985,7 @@ tNFC_STATUS rw_t3t_send_next_ndef_check_cmd (tRW_T3T_CB *p_cb)
         }
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         retval = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_CHECK_NDEF, p_cmd_buf, rw_t3t_check_timeout (cur_blocks_to_read));
@@ -1012,12 +1008,12 @@ tNFC_STATUS rw_t3t_send_next_ndef_check_cmd (tRW_T3T_CB *p_cb)
 ** Returns          Number of bytes added to message
 **
 *****************************************************************************/
-void rw_t3t_message_set_block_list (tRW_T3T_CB *p_cb, UINT8 **p, UINT8 num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks)
+void rw_t3t_message_set_block_list (tRW_T3T_CB *p_cb, uint8_t **p, uint8_t num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks)
 {
-    UINT16 i, cur_service_code;
-    UINT8 service_code_idx, num_services = 0;
-    UINT8 *p_msg_num_services;
-    UINT16 service_list[T3T_MSG_SERVICE_LIST_MAX];
+    uint16_t i, cur_service_code;
+    uint8_t service_code_idx, num_services = 0;
+    uint8_t *p_msg_num_services;
+    uint16_t service_list[T3T_MSG_SERVICE_LIST_MAX];
 
     /* Add CHECK or UPDATE opcode to message  */
     UINT8_TO_STREAM ((*p), ((p_cb->cur_cmd == RW_T3T_CMD_CHECK) ? T3T_MSG_OPC_CHECK_CMD:T3T_MSG_OPC_UPDATE_CMD));
@@ -1094,21 +1090,21 @@ void rw_t3t_message_set_block_list (tRW_T3T_CB *p_cb, UINT8 **p, UINT8 num_block
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_send_check_cmd (tRW_T3T_CB *p_cb, UINT8 num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks)
+tNFC_STATUS rw_t3t_send_check_cmd (tRW_T3T_CB *p_cb, uint8_t num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p, *p_cmd_start;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p, *p_cmd_start;
     tNFC_STATUS retval = NFC_STATUS_OK;
 
     p_cb->cur_cmd = RW_T3T_CMD_CHECK;
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = p_cmd_start = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
         rw_t3t_message_set_block_list (p_cb, &p, num_blocks, p_t3t_blocks);
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         retval = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_CHECK, p_cmd_buf, rw_t3t_check_timeout(num_blocks));
@@ -1130,24 +1126,24 @@ tNFC_STATUS rw_t3t_send_check_cmd (tRW_T3T_CB *p_cb, UINT8 num_blocks, tT3T_BLOC
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_send_update_cmd (tRW_T3T_CB *p_cb, UINT8 num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks, UINT8 *p_data)
+tNFC_STATUS rw_t3t_send_update_cmd (tRW_T3T_CB *p_cb, uint8_t num_blocks, tT3T_BLOCK_DESC *p_t3t_blocks, uint8_t *p_data)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p, *p_cmd_start;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p, *p_cmd_start;
     tNFC_STATUS retval = NFC_STATUS_OK;
 
     p_cb->cur_cmd = RW_T3T_CMD_UPDATE;
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = p_cmd_start = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
         rw_t3t_message_set_block_list (p_cb, &p, num_blocks, p_t3t_blocks);
 
         /* Add data blocks to the message */
         ARRAY_TO_STREAM (p, p_data, num_blocks*16);
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         retval = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_UPDATE, p_cmd_buf, rw_t3t_update_timeout(num_blocks));
@@ -1171,14 +1167,14 @@ tNFC_STATUS rw_t3t_send_update_cmd (tRW_T3T_CB *p_cb, UINT8 num_blocks, tT3T_BLO
 *****************************************************************************/
 tNFC_STATUS rw_t3t_check_mc_block (tRW_T3T_CB *p_cb)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p, *p_cmd_start;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p, *p_cmd_start;
 
     /* Read Memory Configuration block */
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = p_cmd_start = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = p_cmd_start = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
         /* Add CHECK opcode to message  */
         UINT8_TO_STREAM (p, T3T_MSG_OPC_CHECK_CMD);
@@ -1198,7 +1194,7 @@ tNFC_STATUS rw_t3t_check_mc_block (tRW_T3T_CB *p_cb)
         UINT8_TO_STREAM (p, T3T_MSG_FELICALITE_BLOCK_ID_MC);
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
         /* Send the T3T message */
         return rw_t3t_send_cmd (p_cb, p_cb->cur_cmd, p_cmd_buf, rw_t3t_check_timeout(1));
@@ -1219,16 +1215,16 @@ tNFC_STATUS rw_t3t_check_mc_block (tRW_T3T_CB *p_cb)
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_send_raw_frame (tRW_T3T_CB *p_cb, UINT16 len, UINT8 *p_data)
+tNFC_STATUS rw_t3t_send_raw_frame (tRW_T3T_CB *p_cb, uint16_t len, uint8_t *p_data)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p;
     tNFC_STATUS retval = NFC_STATUS_OK;
 
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
         /* Construct T3T message */
-        p = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
         /* Add data blocks to the message */
         ARRAY_TO_STREAM (p, p_data, len);
@@ -1262,14 +1258,14 @@ tNFC_STATUS rw_t3t_send_raw_frame (tRW_T3T_CB *p_cb, UINT16 len, UINT8 *p_data)
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_ndef_detect_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_ndef_detect_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    UINT8 *p;
-    UINT32 temp;
-    UINT8 i;
-    UINT16 checksum_calc, checksum_rx;
+    uint8_t *p;
+    uint32_t temp;
+    uint8_t i;
+    uint16_t checksum_calc, checksum_rx;
     tRW_DETECT_NDEF_DATA evt_data;
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
 
     evt_data.status = NFC_STATUS_FAILED;
     evt_data.flags  = RW_NDEF_FL_UNKNOWN;
@@ -1351,7 +1347,7 @@ void rw_t3t_act_handle_ndef_detect_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
                 /* Set data for RW_T3T_NDEF_DETECT_EVT */
                 evt_data.status = p_cb->ndef_attrib.status;
                 evt_data.cur_size = p_cb->ndef_attrib.ln;
-                evt_data.max_size = (UINT32) p_cb->ndef_attrib.nmaxb * 16;
+                evt_data.max_size = (uint32_t) p_cb->ndef_attrib.nmaxb * 16;
                 evt_data.protocol = NFC_PROTOCOL_T3T;
                 evt_data.flags    = (RW_NDEF_FL_SUPPORTED | RW_NDEF_FL_FORMATED);
                 if (p_cb->ndef_attrib.rwflag == T3T_MSG_NDEF_RWFLAG_RO)
@@ -1380,9 +1376,9 @@ void rw_t3t_act_handle_ndef_detect_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_check_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_check_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
     tRW_READ_DATA evt_data;
     tNFC_STATUS nfc_status = NFC_STATUS_OK;
 
@@ -1424,9 +1420,9 @@ void rw_t3t_act_handle_check_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_update_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_update_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
     tRW_READ_DATA evt_data;
 
     /* Validate response from tag */
@@ -1465,7 +1461,7 @@ void rw_t3t_act_handle_update_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 void rw_t3t_act_handle_raw_senddata_rsp (tRW_T3T_CB *p_cb, tNFC_DATA_CEVT *p_data)
 {
     tRW_READ_DATA evt_data;
-    BT_HDR        *p_pkt = p_data->p_data;
+    NFC_HDR        *p_pkt = p_data->p_data;
 
 #if (BT_TRACE_VERBOSE == TRUE)
         RW_TRACE_DEBUG2 ("RW T3T Raw Frame: Len [0x%X] Status [%s]", p_pkt->len, NFC_GetStatusName (p_data->status));
@@ -1491,14 +1487,14 @@ void rw_t3t_act_handle_raw_senddata_rsp (tRW_T3T_CB *p_cb, tNFC_DATA_CEVT *p_dat
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_check_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_check_ndef_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    BOOLEAN check_complete = TRUE;
+    bool    check_complete = true;
     tNFC_STATUS nfc_status = NFC_STATUS_OK;
     tRW_READ_DATA read_data;
     tRW_DATA evt_data;
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
-    UINT8 rsp_num_bytes_rx;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t rsp_num_bytes_rx;
 
     /* Validate response from tag */
     if (  (p_t3t_rsp[T3T_MSG_RSP_OFFSET_STATUS1] != T3T_MSG_RSP_STATUS_OK)                      /* verify response status code */
@@ -1549,7 +1545,7 @@ void rw_t3t_act_handle_check_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
                 if ((nfc_status = rw_t3t_send_next_ndef_check_cmd (p_cb)) == NFC_STATUS_OK)
                 {
                     /* Still getting more segments. Don't send RW_T3T_CHECK_CPLT_EVT yet */
-                    check_complete = FALSE;
+                    check_complete = false;
                 }
             }
         }
@@ -1574,12 +1570,12 @@ void rw_t3t_act_handle_check_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_update_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_update_ndef_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    BOOLEAN update_complete = TRUE;
+    bool    update_complete = true;
     tNFC_STATUS nfc_status = NFC_STATUS_OK;
     tRW_DATA evt_data;
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
 
     /* Check nfcid2 and status of response */
     if (  (p_t3t_rsp[T3T_MSG_RSP_OFFSET_STATUS1] != T3T_MSG_RSP_STATUS_OK)                           /* verify response status code */
@@ -1606,17 +1602,17 @@ void rw_t3t_act_handle_update_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
         if ((nfc_status = rw_t3t_send_next_ndef_update_cmd (p_cb)) == NFC_STATUS_OK)
         {
             /* Wait for update response */
-            update_complete = FALSE;
+            update_complete = false;
         }
     }
     /*  Otherwise, no more NDEF bytes. Send final UPDATE for Attribute Information block */
     else
     {
         p_cb->flags |= RW_T3T_FL_IS_FINAL_NDEF_SEGMENT;
-        if ((nfc_status = rw_t3t_send_update_ndef_attribute_cmd (p_cb, FALSE)) == NFC_STATUS_OK)
+        if ((nfc_status = rw_t3t_send_update_ndef_attribute_cmd (p_cb, false)) == NFC_STATUS_OK)
         {
             /* Wait for update response */
-            update_complete = FALSE;
+            update_complete = false;
         }
     }
 
@@ -1644,80 +1640,24 @@ void rw_t3t_act_handle_update_ndef_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          Nothing
 **
 *****************************************************************************/
-static void rw_t3t_handle_get_sc_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf)
+static void rw_t3t_handle_get_sc_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p, *p_cmd_start;
-    UINT16 sc;
-    tNFC_STATUS status = NFC_STATUS_FAILED;
+    uint8_t *p;
+    uint16_t sc;
 
-    /* If waiting for wildcard POLL */
-    if (p_cb->rw_substate == RW_T3T_GET_SC_SST_POLL_WILDCARD)
+    /* Get the system code from the response */
+    if (  (nci_status == NCI_STATUS_OK)
+          &&(num_responses > 0)
+          &&(sensf_res_buf_size >= (RW_T3T_SENSF_RES_RD_OFFSET + RW_T3T_SENSF_RES_RD_LEN))  )
     {
-        /* Get the system code from the response */
-        if (  (nci_status == NCI_STATUS_OK)
-            &&(num_responses > 0)
-            &&(sensf_res_buf_size >= (RW_T3T_SENSF_RES_RD_OFFSET + RW_T3T_SENSF_RES_RD_LEN))  )
-        {
-            p = &p_sensf_res_buf[RW_T3T_SENSF_RES_RD_OFFSET];
-            BE_STREAM_TO_UINT16 (sc, p);
+        p = &p_sensf_res_buf[RW_T3T_SENSF_RES_RD_OFFSET];
+        BE_STREAM_TO_UINT16 (sc, p);
 
-            /* Handle felica lite */
-            if (sc == T3T_SYSTEM_CODE_FELICA_LITE)
-            {
-                RW_TRACE_DEBUG1 ("FeliCa Lite tag detected (system code %04X)", sc);
-                /* Store system code */
-                p_cb->system_codes[p_cb->num_system_codes++] = sc;
-
-                /* Poll for NDEF system code */
-                if ((status = (tNFC_STATUS) nci_snd_t3t_polling (T3T_SYSTEM_CODE_NDEF, 0, 0)) == NCI_STATUS_OK)
-                {
-                    p_cb->rw_substate = RW_T3T_GET_SC_SST_POLL_NDEF;
-                    p_cb->cur_poll_rc = 0;
-                    p_cb->flags |= RW_T3T_FL_W4_GET_SC_POLL_RSP;
-
-                    /* start timer for waiting for responses */
-                    rw_t3t_start_poll_timer (p_cb);
-                }
-            }
-            else
-            {
-                /* All other types, send REQUEST_SYSTEM_CODE command */
-                if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
-                {
-                    p_cb->rw_substate = RW_T3T_GET_SC_SST_REQUEST_SC;
-
-                    /* Construct T3T message */
-                    p_cmd_start = p = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
-                    UINT8_TO_STREAM (p, T3T_MSG_OPC_REQ_SYSTEMCODE_CMD);
-                    ARRAY_TO_STREAM (p, p_cb->peer_nfcid2, NCI_NFCID2_LEN);
-
-                    /* Fill in length field */
-                    p_cmd_buf->len = (UINT16) (p - p_cmd_start);
-
-                    /* Send the T3T message */
-                    status = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_GET_SYSTEM_CODES, p_cmd_buf, RW_T3T_DEFAULT_CMD_TIMEOUT_TICKS);
-                }
-            }
-        }
-
-        /* Error proceeding. Notify upper layer of system codes found so far */
-        if (status != NFC_STATUS_OK)
-        {
-            rw_t3t_handle_get_system_codes_cplt ();
-        }
+        RW_TRACE_DEBUG1 ("FeliCa detected (RD, system code %04X)", sc);
+        p_cb->system_codes[p_cb->num_system_codes++] = sc;
     }
-    /* If waiting for NDEF POLL */
-    else if (p_cb->rw_substate == RW_T3T_GET_SC_SST_POLL_NDEF)
-    {
-        /* Validate response for NDEF poll */
-        if ((nci_status == NCI_STATUS_OK) && (num_responses > 0))
-        {
-            /* Tag responded for NDEF poll */
-            p_cb->system_codes[p_cb->num_system_codes++] = T3T_SYSTEM_CODE_NDEF;
-        }
-        rw_t3t_handle_get_system_codes_cplt ();
-    }
+
+    rw_t3t_handle_get_system_codes_cplt ();
 }
 
 /*****************************************************************************
@@ -1729,10 +1669,10 @@ static void rw_t3t_handle_get_sc_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, U
 ** Returns          Nothing
 **
 *****************************************************************************/
-static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf)
+static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf)
 {
-    BT_HDR *p_cmd_buf;
-    UINT8 *p, *p_cmd_start;
+    NFC_HDR *p_cmd_buf;
+    uint8_t *p, *p_cmd_start;
     tRW_DATA evt_data;
 
     /* Validate response for NDEF poll */
@@ -1744,7 +1684,7 @@ static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_stat
         if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
         {
             /* Construct T3T message */
-            p = p_cmd_start = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+            p = p_cmd_start = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
             /* Add CHECK opcode to message  */
             UINT8_TO_STREAM (p, T3T_MSG_OPC_CHECK_CMD);
@@ -1764,7 +1704,7 @@ static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_stat
             UINT8_TO_STREAM (p, 0);
 
             /* Calculate length of message */
-            p_cmd_buf->len = (UINT16) (p - p_cmd_start);
+            p_cmd_buf->len = (uint16_t) (p - p_cmd_start);
 
             /* Send the T3T message */
             if ((evt_data.status = rw_t3t_send_cmd (p_cb, RW_T3T_CMD_DETECT_NDEF, p_cmd_buf, rw_t3t_check_timeout(1))) == NFC_STATUS_OK)
@@ -1784,52 +1724,6 @@ static void rw_t3t_handle_ndef_detect_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_stat
     (*(rw_cb.p_cback)) (RW_T3T_NDEF_DETECT_EVT, &evt_data);
 }
 
-
-/*****************************************************************************
-**
-** Function         rw_t3t_act_handle_get_sc_rsp
-**
-** Description      Handle response for getting system codes
-**
-** Returns          Nothing
-**
-*****************************************************************************/
-void rw_t3t_act_handle_get_sc_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
-{
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
-    UINT8 *p;
-    UINT16 sc;
-    UINT8 num_sc, i;
-
-    /* Validate response opcode */
-    if (p_t3t_rsp[T3T_MSG_RSP_OFFSET_RSPCODE] != T3T_MSG_OPC_REQ_SYSTEMCODE_RSP)
-    {
-        RW_TRACE_ERROR2 ("Response error: expecting rsp_code %02X, but got %02X", T3T_MSG_OPC_REQ_SYSTEMCODE_RSP, p_t3t_rsp[T3T_MSG_RSP_OFFSET_RSPCODE]);
-    }
-    else
-    {
-        /* Point to number of systems parameter */
-        p = &p_t3t_rsp[T3T_MSG_RSP_OFFSET_NUMSYS];
-        STREAM_TO_UINT8 (num_sc, p);
-
-        /* Validate maximum */
-        if (num_sc>T3T_MAX_SYSTEM_CODES)
-        {
-            RW_TRACE_DEBUG2 ("Tag's number of systems (%i) exceeds NFA max (%i)", num_sc, T3T_MAX_SYSTEM_CODES);
-            num_sc = T3T_MAX_SYSTEM_CODES;
-        }
-
-        for (i = 0; i < num_sc; i++)
-        {
-            BE_STREAM_TO_UINT16 (sc, p);
-            p_cb->system_codes[p_cb->num_system_codes++] = sc;
-        }
-    }
-    rw_t3t_handle_get_system_codes_cplt ();
-
-    GKI_freebuf (p_msg_rsp);
-}
-
 /*****************************************************************************
 **
 ** Function         rw_t3t_update_block
@@ -1840,15 +1734,15 @@ void rw_t3t_act_handle_get_sc_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          tNFC_STATUS
 **
 *****************************************************************************/
-tNFC_STATUS rw_t3t_update_block (tRW_T3T_CB *p_cb, UINT8 block_id, UINT8 *p_block_data)
+tNFC_STATUS rw_t3t_update_block (tRW_T3T_CB *p_cb, uint8_t block_id, uint8_t *p_block_data)
 {
-    UINT8 *p_dst, *p_cmd_start;
-    BT_HDR *p_cmd_buf;
+    uint8_t *p_dst, *p_cmd_start;
+    NFC_HDR *p_cmd_buf;
     tNFC_STATUS status;
 
     if ((p_cmd_buf = rw_t3t_get_cmd_buf ()) != NULL)
     {
-        p_dst = p_cmd_start = (UINT8 *) (p_cmd_buf+1) + p_cmd_buf->offset;
+        p_dst = p_cmd_start = (uint8_t *) (p_cmd_buf+1) + p_cmd_buf->offset;
 
         /* Add UPDATE opcode to message  */
         UINT8_TO_STREAM (p_dst, T3T_MSG_OPC_UPDATE_CMD);
@@ -1871,7 +1765,7 @@ tNFC_STATUS rw_t3t_update_block (tRW_T3T_CB *p_cb, UINT8 block_id, UINT8 *p_bloc
         ARRAY_TO_STREAM (p_dst, p_block_data, T3T_MSG_BLOCKSIZE);
 
         /* Calculate length of message */
-        p_cmd_buf->len = (UINT16) (p_dst - p_cmd_start);
+        p_cmd_buf->len = (uint16_t) (p_dst - p_cmd_start);
 
         /* Send the T3T message */
         status = rw_t3t_send_cmd (p_cb, p_cb->cur_cmd, p_cmd_buf, rw_t3t_update_timeout(1));
@@ -1894,7 +1788,7 @@ tNFC_STATUS rw_t3t_update_block (tRW_T3T_CB *p_cb, UINT8 block_id, UINT8 *p_bloc
 ** Returns          Nothing
 **
 *****************************************************************************/
-static void rw_t3t_handle_fmt_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf)
+static void rw_t3t_handle_fmt_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf)
 {
     tRW_DATA evt_data;
 
@@ -1934,10 +1828,10 @@ static void rw_t3t_handle_fmt_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_fmt_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_fmt_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
-    UINT8 *p_mc;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_mc;
     tRW_DATA evt_data;
 
     evt_data.status = NFC_STATUS_OK;
@@ -1980,7 +1874,7 @@ void rw_t3t_act_handle_fmt_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
             {
                 /* SYS_OP=1: ndef already enabled. Just need to update attribute information block */
                 p_cb->rw_substate = RW_T3T_FMT_SST_UPDATE_NDEF_ATTRIB;
-                evt_data.status = rw_t3t_update_block (p_cb, 0, (UINT8 *) rw_t3t_default_attrib_info);
+                evt_data.status = rw_t3t_update_block (p_cb, 0, (uint8_t *) rw_t3t_default_attrib_info);
             }
         }
 
@@ -2004,7 +1898,7 @@ void rw_t3t_act_handle_fmt_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
         {
             /* SYS_OP=1: ndef already enabled. Just need to update attribute information block */
             p_cb->rw_substate = RW_T3T_FMT_SST_UPDATE_NDEF_ATTRIB;
-            evt_data.status = rw_t3t_update_block (p_cb, 0, (UINT8 *) rw_t3t_default_attrib_info);
+            evt_data.status = rw_t3t_update_block (p_cb, 0, (uint8_t *) rw_t3t_default_attrib_info);
         }
 
         /* If error, notify upper layer */
@@ -2040,14 +1934,14 @@ void rw_t3t_act_handle_fmt_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          Nothing
 **
 *****************************************************************************/
-static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT8 num_responses, UINT8 sensf_res_buf_size, UINT8 *p_sensf_res_buf)
+static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, uint8_t nci_status, uint8_t num_responses, uint8_t sensf_res_buf_size, uint8_t *p_sensf_res_buf)
 {
     tRW_DATA evt_data;
-    UINT8 rw_t3t_ndef_attrib_info[T3T_MSG_BLOCKSIZE];
-    UINT8 *p;
-    UINT8 tempU8;
-    UINT16 checksum, i;
-    UINT32 tempU32 = 0;
+    uint8_t rw_t3t_ndef_attrib_info[T3T_MSG_BLOCKSIZE];
+    uint8_t *p;
+    uint8_t tempU8;
+    uint16_t checksum, i;
+    uint32_t tempU32 = 0;
 
     evt_data.status = NFC_STATUS_OK;
 
@@ -2074,7 +1968,7 @@ static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT
             UINT8_TO_STREAM (p, p_cb->ndef_attrib.writef);           /* WriteFlag: 00h if writing data finished; 0Fh if writing data in progress */
             UINT8_TO_STREAM (p, 0x00);                               /* RWFlag: 00h NDEF is read-only */
 
-            tempU8 = (UINT8) (p_cb->ndef_attrib.ln >> 16);
+            tempU8 = (uint8_t) (p_cb->ndef_attrib.ln >> 16);
             /* Get length (3-byte, big-endian) */
             UINT8_TO_STREAM (p, tempU8);                               /* Ln: high-byte */
             UINT16_TO_BE_STREAM (p, p_cb->ndef_attrib.ln);           /* Ln: lo-word */
@@ -2087,7 +1981,7 @@ static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT
             }
             UINT16_TO_BE_STREAM (p, checksum);
 
-            evt_data.status = rw_t3t_update_block (p_cb, 0, (UINT8 *) rw_t3t_ndef_attrib_info);
+            evt_data.status = rw_t3t_update_block (p_cb, 0, (uint8_t *) rw_t3t_ndef_attrib_info);
         }
         else if (p_cb->cur_cmd == RW_T3T_CMD_SET_READ_ONLY_HARD)
         {
@@ -2121,10 +2015,10 @@ static void rw_t3t_handle_sro_poll_rsp (tRW_T3T_CB *p_cb, UINT8 nci_status, UINT
 ** Returns          Nothing
 **
 *****************************************************************************/
-void rw_t3t_act_handle_sro_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
+void rw_t3t_act_handle_sro_rsp (tRW_T3T_CB *p_cb, NFC_HDR *p_msg_rsp)
 {
-    UINT8 *p_t3t_rsp = (UINT8 *) (p_msg_rsp+1) + p_msg_rsp->offset;
-    UINT8 *p_mc;
+    uint8_t *p_t3t_rsp = (uint8_t *) (p_msg_rsp+1) + p_msg_rsp->offset;
+    uint8_t *p_mc;
     tRW_DATA evt_data;
 
     evt_data.status = NFC_STATUS_OK;
@@ -2229,17 +2123,17 @@ void rw_t3t_act_handle_sro_rsp (tRW_T3T_CB *p_cb, BT_HDR *p_msg_rsp)
 ** Returns          none
 **
 *******************************************************************************/
-void rw_t3t_data_cback (UINT8 conn_id, tNFC_DATA_CEVT *p_data)
+void rw_t3t_data_cback (uint8_t conn_id, tNFC_DATA_CEVT *p_data)
 {
     tRW_T3T_CB *p_cb  = &rw_cb.tcb.t3t;
-    BT_HDR     *p_msg = p_data->p_data;
-    BOOLEAN free_msg = FALSE;           /* if TRUE, free msg buffer before returning */
-    UINT8 *p, sod;
+    NFC_HDR     *p_msg = p_data->p_data;
+    bool    free_msg = false;           /* if TRUE, free msg buffer before returning */
+    uint8_t *p, sod;
 
     /* Stop rsponse timer */
     nfc_stop_quick_timer (&p_cb->timer);
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
+#if (RW_STATS_INCLUDED == TRUE)
     /* Update rx stats */
     rw_main_update_rx_stats (p_msg->len);
 #endif  /* RW_STATS_INCLUDED */
@@ -2257,14 +2151,14 @@ void rw_t3t_data_cback (UINT8 conn_id, tNFC_DATA_CEVT *p_data)
     else if (p_msg->len < T3T_MSG_RSP_COMMON_HDR_LEN)
     {
         RW_TRACE_ERROR1 ("T3T: invalid Type3 Tag Message (invalid len: %i)", p_msg->len);
-        free_msg = TRUE;
+        free_msg = true;
 
         rw_t3t_process_frame_error ();
     }
     else
     {
         /* Check for RF frame error */
-        p = (UINT8 *) (p_msg+1) + p_msg->offset;
+        p = (uint8_t *) (p_msg+1) + p_msg->offset;
         sod = p[0];
         if (p[sod] != NCI_STATUS_OK)
         {
@@ -2276,7 +2170,7 @@ void rw_t3t_data_cback (UINT8 conn_id, tNFC_DATA_CEVT *p_data)
         }
 
 #if (BT_TRACE_PROTOCOL == TRUE)
-        DispT3TagMessage (p_msg, TRUE);
+        DispT3TagMessage (p_msg, true);
 #endif
 
         /* Skip over SoD */
@@ -2310,10 +2204,6 @@ void rw_t3t_data_cback (UINT8 conn_id, tNFC_DATA_CEVT *p_data)
                 rw_t3t_act_handle_raw_senddata_rsp (p_cb, p_data);
                 break;
 
-            case RW_T3T_CMD_GET_SYSTEM_CODES:
-                rw_t3t_act_handle_get_sc_rsp (p_cb, p_msg);
-                break;
-
             case RW_T3T_CMD_FORMAT:
                 rw_t3t_act_handle_fmt_rsp (p_cb, p_msg);
                 break;
@@ -2345,7 +2235,7 @@ void rw_t3t_data_cback (UINT8 conn_id, tNFC_DATA_CEVT *p_data)
 ** Returns          none
 **
 *******************************************************************************/
-void rw_t3t_conn_cback (UINT8 conn_id, tNFC_CONN_EVT event, tNFC_CONN *p_data)
+void rw_t3t_conn_cback (uint8_t conn_id, tNFC_CONN_EVT event, tNFC_CONN *p_data)
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
     RW_TRACE_DEBUG2 ("rw_t3t_conn_cback: conn_id=%i, evt=0x%02x", conn_id, event);
@@ -2373,7 +2263,7 @@ void rw_t3t_conn_cback (UINT8 conn_id, tNFC_CONN_EVT event, tNFC_CONN *p_data)
         else if (p_data->data.p_data != NULL)
         {
             /* Free the response buffer in case of error response */
-            GKI_freebuf ((BT_HDR *) (p_data->data.p_data));
+            GKI_freebuf ((NFC_HDR *) (p_data->data.p_data));
             p_data->data.p_data = NULL;
         }
         /* Data event with error status...fall through to NFC_ERROR_CEVT case */
@@ -2382,7 +2272,7 @@ void rw_t3t_conn_cback (UINT8 conn_id, tNFC_CONN_EVT event, tNFC_CONN *p_data)
     case NFC_ERROR_CEVT:
         nfc_stop_quick_timer (&p_cb->timer);
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
+#if (RW_STATS_INCLUDED == TRUE)
         rw_main_update_trans_error_stats ();
 #endif  /* RW_STATS_INCLUDED */
 
@@ -2410,9 +2300,9 @@ void rw_t3t_conn_cback (UINT8 conn_id, tNFC_CONN_EVT event, tNFC_CONN *p_data)
 ** Returns          NFC_STATUS_OK
 **
 *******************************************************************************/
-static void rw_t3t_mrti_to_a_b (UINT8 mrti, UINT32 *p_a, UINT32 *p_b)
+static void rw_t3t_mrti_to_a_b (uint8_t mrti, uint32_t *p_a, uint32_t *p_b)
 {
-    UINT8 a, b, e;
+    uint8_t a, b, e;
 
     a = (mrti & 0x7) + 1;   /* A is bit 0 ~ bit 2 */
     mrti >>=3;
@@ -2433,7 +2323,7 @@ static void rw_t3t_mrti_to_a_b (UINT8 mrti, UINT32 *p_a, UINT32 *p_b)
 ** Returns          NFC_STATUS_OK
 **
 *******************************************************************************/
-tNFC_STATUS rw_t3t_select (UINT8 peer_nfcid2[NCI_RF_F_UID_LEN], UINT8 mrti_check, UINT8 mrti_update)
+tNFC_STATUS rw_t3t_select (uint8_t peer_nfcid2[NCI_RF_F_UID_LEN], uint8_t mrti_check, uint8_t mrti_update)
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
 
@@ -2449,7 +2339,7 @@ tNFC_STATUS rw_t3t_select (UINT8 peer_nfcid2[NCI_RF_F_UID_LEN], UINT8 mrti_check
     /* Alloc cmd buf for retransmissions */
     if (p_cb->p_cur_cmd_buf ==  NULL)
     {
-        if ((p_cb->p_cur_cmd_buf = (BT_HDR *) GKI_getpoolbuf (NFC_RW_POOL_ID)) == NULL)
+        if ((p_cb->p_cur_cmd_buf = (NFC_HDR *) GKI_getpoolbuf (NFC_RW_POOL_ID)) == NULL)
         {
             RW_TRACE_ERROR0 ("rw_t3t_select: unable to allocate buffer for retransmission");
             p_cb->rw_state = RW_T3T_STATE_NOT_ACTIVATED;
@@ -2473,11 +2363,11 @@ tNFC_STATUS rw_t3t_select (UINT8 peer_nfcid2[NCI_RF_F_UID_LEN], UINT8 mrti_check
 ** Returns          NFC_STATUS_OK
 **
 *******************************************************************************/
-static tNFC_STATUS rw_t3t_unselect (UINT8 peer_nfcid2[])
+static tNFC_STATUS rw_t3t_unselect (uint8_t peer_nfcid2[])
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
 
-#if (defined (RW_STATS_INCLUDED) && (RW_STATS_INCLUDED == TRUE))
+#if (RW_STATS_INCLUDED == TRUE)
     /* Display stats */
     rw_main_log_stats ();
 #endif  /* RW_STATS_INCLUDED */
@@ -2507,10 +2397,10 @@ static tNFC_STATUS rw_t3t_unselect (UINT8 peer_nfcid2[])
 ** Returns          updated NDEF Flag value
 **
 *******************************************************************************/
-static void rw_t3t_update_ndef_flag (UINT8 *p_flag)
+static void rw_t3t_update_ndef_flag (uint8_t *p_flag)
 {
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
-    UINT8 xx;
+    uint8_t xx;
 
     for (xx = 0; xx < p_cb->num_system_codes; xx++)
     {
@@ -2533,7 +2423,7 @@ static void rw_t3t_update_ndef_flag (UINT8 *p_flag)
 ** Returns          command string
 **
 *******************************************************************************/
-static char *rw_t3t_cmd_str (UINT8 cmd_id)
+static char *rw_t3t_cmd_str (uint8_t cmd_id)
 {
     switch (cmd_id)
     {
@@ -2573,7 +2463,7 @@ static char *rw_t3t_cmd_str (UINT8 cmd_id)
 ** Returns          command string
 **
 *******************************************************************************/
-static char *rw_t3t_state_str (UINT8 state_id)
+static char *rw_t3t_state_str (uint8_t state_id)
 {
     switch (state_id)
     {
@@ -2728,7 +2618,7 @@ tNFC_STATUS RW_T3tCheckNDef (void)
 **      NFC_STATUS_FAILED: other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tUpdateNDef (UINT32 len, UINT8 *p_data)
+tNFC_STATUS RW_T3tUpdateNDef (uint32_t len, uint8_t *p_data)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -2746,7 +2636,7 @@ tNFC_STATUS RW_T3tUpdateNDef (UINT32 len, UINT8 *p_data)
         RW_TRACE_ERROR0 ("Error: NDEF detection not performed yet");
         return (NFC_STATUS_NOT_INITIALIZED);
     }
-    else if (len > (((UINT32)p_cb->ndef_attrib.nmaxb) * 16))                /* Len exceed's tag's NDEF memory? */
+    else if (len > (((uint32_t)p_cb->ndef_attrib.nmaxb) * 16))                /* Len exceed's tag's NDEF memory? */
     {
         return (NFC_STATUS_BUFFER_FULL);
     }
@@ -2762,7 +2652,7 @@ tNFC_STATUS RW_T3tUpdateNDef (UINT32 len, UINT8 *p_data)
     p_cb->ndef_msg = p_data;
 
     /* Send initial UPDATE command for NDEF Attribute Info */
-    retval = rw_t3t_send_update_ndef_attribute_cmd (p_cb, TRUE);
+    retval = rw_t3t_send_update_ndef_attribute_cmd (p_cb, true);
 
     return (retval);
 }
@@ -2788,7 +2678,7 @@ tNFC_STATUS RW_T3tUpdateNDef (UINT32 len, UINT8 *p_data)
 **      NFC_STATUS_FAILED: other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tCheck (UINT8 num_blocks, tT3T_BLOCK_DESC *t3t_blocks)
+tNFC_STATUS RW_T3tCheck (uint8_t num_blocks, tT3T_BLOCK_DESC *t3t_blocks)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -2828,7 +2718,7 @@ tNFC_STATUS RW_T3tCheck (UINT8 num_blocks, tT3T_BLOCK_DESC *t3t_blocks)
 **      NFC_STATUS_FAILED: other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tUpdate (UINT8 num_blocks, tT3T_BLOCK_DESC *t3t_blocks, UINT8 *p_data)
+tNFC_STATUS RW_T3tUpdate (uint8_t num_blocks, tT3T_BLOCK_DESC *t3t_blocks, uint8_t *p_data)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -2933,7 +2823,7 @@ tNFC_STATUS RW_T3tPresenceCheck (void)
 **      NFC_STATUS_FAILED: other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tPoll (UINT16 system_code, tT3T_POLL_RC rc, UINT8 tsn)
+tNFC_STATUS RW_T3tPoll (uint16_t system_code, tT3T_POLL_RC rc, uint8_t tsn)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -2947,7 +2837,7 @@ tNFC_STATUS RW_T3tPoll (UINT16 system_code, tT3T_POLL_RC rc, UINT8 tsn)
         return (NFC_STATUS_FAILED);
     }
 
-    if ((retval = (tNFC_STATUS) nci_snd_t3t_polling (system_code, (UINT8) rc, tsn)) == NCI_STATUS_OK)
+    if ((retval = (tNFC_STATUS) nci_snd_t3t_polling (system_code, (uint8_t) rc, tsn)) == NCI_STATUS_OK)
     {
         /* start timer for waiting for responses */
         p_cb->cur_poll_rc = rc;
@@ -2979,7 +2869,7 @@ tNFC_STATUS RW_T3tPoll (UINT16 system_code, tT3T_POLL_RC rc, UINT8 tsn)
 **      NFC_STATUS_FAILED: other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tSendRawFrame (UINT16 len, UINT8 *p_data)
+tNFC_STATUS RW_T3tSendRawFrame (uint16_t len, uint8_t *p_data)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB *p_cb = &rw_cb.tcb.t3t;
@@ -3005,10 +2895,7 @@ tNFC_STATUS RW_T3tSendRawFrame (UINT16 len, UINT8 *p_data)
 **
 ** Description
 **      Get systems codes supported by the activated tag:
-**              Poll for wildcard (FFFF):
-**                  - If felica-lite code then poll for ndef (12fc)
-**                  - Otherwise send RequestSystmCode command to get
-**                    system codes.
+**              Poll for wildcard (FFFF, RC=1):
 **
 **      Before using this API, the application must call RW_SelectTagType to
 **      indicate that a Type 3 tag has been activated.
@@ -3040,7 +2927,6 @@ tNFC_STATUS RW_T3tGetSystemCodes (void)
             p_cb->cur_tout = RW_T3T_DEFAULT_CMD_TIMEOUT_TICKS;
             p_cb->cur_poll_rc = T3T_POLL_RC_SC;
             p_cb->rw_state = RW_T3T_STATE_COMMAND_PENDING;
-            p_cb->rw_substate = RW_T3T_GET_SC_SST_POLL_WILDCARD;
             p_cb->flags |= RW_T3T_FL_W4_GET_SC_POLL_RSP;
             p_cb->num_system_codes = 0;
 
@@ -3048,8 +2934,6 @@ tNFC_STATUS RW_T3tGetSystemCodes (void)
             rw_t3t_start_poll_timer (p_cb);
         }
     }
-
-
 
     return (retval);
 }
@@ -3119,7 +3003,7 @@ tNFC_STATUS RW_T3tFormatNDef (void)
 **                  NFC_STATUS_FAILED if T3T is busy or other error
 **
 *****************************************************************************/
-tNFC_STATUS RW_T3tSetReadOnly (BOOLEAN b_hard_lock)
+tNFC_STATUS RW_T3tSetReadOnly (bool    b_hard_lock)
 {
     tNFC_STATUS retval = NFC_STATUS_OK;
     tRW_T3T_CB  *p_cb  = &rw_cb.tcb.t3t;

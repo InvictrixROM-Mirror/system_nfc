@@ -38,7 +38,7 @@
 #define NFA_SNEP_REQ_CODE_PUT           0x02    /* accept an NDEF message           */
 #define NFA_SNEP_REQ_CODE_REJECT        0x7F    /* do not send remaining fragments  */
 
-#define tNFA_SNEP_REQ_CODE  UINT8
+#define tNFA_SNEP_REQ_CODE  uint8_t
 
 #define NFA_SNEP_RESP_CODE_CONTINUE     0x80    /* continue send remaining fragments    */
 #define NFA_SNEP_RESP_CODE_SUCCESS      0x81    /* the operation succeeded              */
@@ -49,7 +49,7 @@
 #define NFA_SNEP_RESP_CODE_UNSUPP_VER   0xE1    /* unsupported protocol version         */
 #define NFA_SNEP_RESP_CODE_REJECT       0xFF    /* do not send remaining fragments      */
 
-#define tNFA_SNEP_RESP_CODE UINT8
+#define tNFA_SNEP_RESP_CODE uint8_t
 
 /* NFA SNEP callback events */
 #define NFA_SNEP_REG_EVT                    0x00    /* Server/client Registeration Status   */
@@ -69,7 +69,7 @@
 #define NFA_SNEP_DEFAULT_SERVER_STARTED_EVT 0x0C    /* SNEP default server is started       */
 #define NFA_SNEP_DEFAULT_SERVER_STOPPED_EVT 0x0D    /* SNEP default server is stopped       */
 
-typedef UINT8 tNFA_SNEP_EVT;
+typedef uint8_t tNFA_SNEP_EVT;
 
 #define NFA_SNEP_ANY_SAP         LLCP_INVALID_SAP
 
@@ -105,17 +105,17 @@ typedef struct
 typedef struct
 {
     tNFA_HANDLE         conn_handle;        /* handle for data link connection */
-    UINT32              acceptable_length;  /* acceptable length from client   */
-    UINT32              ndef_length;        /* NDEF message length             */
-    UINT8               *p_ndef;            /* NDEF message                    */
+    uint32_t            acceptable_length;  /* acceptable length from client   */
+    uint32_t            ndef_length;        /* NDEF message length             */
+    uint8_t             *p_ndef;            /* NDEF message                    */
 } tNFA_SNEP_GET_REQ;
 
 /* Data for NFA_SNEP_PUT_REQ_EVT */
 typedef struct
 {
     tNFA_HANDLE         conn_handle;        /* handle for data link connection */
-    UINT32              ndef_length;        /* NDEF message length             */
-    UINT8               *p_ndef;            /* NDEF message                    */
+    uint32_t            ndef_length;        /* NDEF message length             */
+    uint8_t             *p_ndef;            /* NDEF message                    */
 } tNFA_SNEP_PUT_REQ;
 
 /* Data for NFA_SNEP_GET_RESP_EVT */
@@ -123,8 +123,8 @@ typedef struct
 {
     tNFA_HANDLE         conn_handle;        /* handle for data link connection */
     tNFA_SNEP_RESP_CODE resp_code;          /* response code from server       */
-    UINT32              ndef_length;        /* NDEF message length             */
-    UINT8               *p_ndef;            /* NDEF message                    */
+    uint32_t            ndef_length;        /* NDEF message length             */
+    uint8_t             *p_ndef;            /* NDEF message                    */
 } tNFA_SNEP_GET_RESP;
 
 /* Data for NFA_SNEP_PUT_RESP_EVT */
@@ -147,22 +147,22 @@ typedef struct
     tNFA_HANDLE         conn_handle;        /* handle for data link connection                */
     tNFA_SNEP_REQ_CODE  req_code;           /* NFA_SNEP_REQ_CODE_GET or NFA_SNEP_REQ_CODE_PUT */
     tNFA_SNEP_RESP_CODE resp_code;          /* Response code if cannot allocate buffer        */
-    UINT32              ndef_length;        /* NDEF message length                            */
-    UINT8               *p_buff;            /* buffer for NDEF message                        */
+    uint32_t            ndef_length;        /* NDEF message length                            */
+    uint8_t             *p_buff;            /* buffer for NDEF message                        */
 } tNFA_SNEP_ALLOC;
 
 /* Data for NFA_SNEP_FREE_BUFF_EVT */
 typedef struct
 {
     tNFA_HANDLE         conn_handle;        /* handle for data link connection */
-    UINT8               *p_buff;            /* buffer to free                  */
+    uint8_t             *p_buff;            /* buffer to free                  */
 } tNFA_SNEP_FREE;
 
 /* Data for NFA_SNEP_GET_RESP_CMPL_EVT */
 typedef struct
 {
     tNFA_HANDLE         conn_handle;        /* handle for data link connection */
-    UINT8               *p_buff;            /* buffer for NDEF message         */
+    uint8_t             *p_buff;            /* buffer for NDEF message         */
 } tNFA_SNEP_GET_RESP_CMPL;
 
 /* Union of all SNEP callback structures */
@@ -209,7 +209,7 @@ extern "C"
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepStartDefaultServer (tNFA_SNEP_CBACK *p_cback);
+extern tNFA_STATUS NFA_SnepStartDefaultServer (tNFA_SNEP_CBACK *p_cback);
 
 /*******************************************************************************
 **
@@ -226,7 +226,7 @@ NFC_API extern tNFA_STATUS NFA_SnepStartDefaultServer (tNFA_SNEP_CBACK *p_cback)
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepStopDefaultServer (tNFA_SNEP_CBACK *p_cback);
+extern tNFA_STATUS NFA_SnepStopDefaultServer (tNFA_SNEP_CBACK *p_cback);
 
 /*******************************************************************************
 **
@@ -250,9 +250,9 @@ NFC_API extern tNFA_STATUS NFA_SnepStopDefaultServer (tNFA_SNEP_CBACK *p_cback);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepRegisterServer (UINT8           server_sap,
-                                                   char            *p_service_name,
-                                                   tNFA_SNEP_CBACK *p_cback);
+extern tNFA_STATUS NFA_SnepRegisterServer (uint8_t         server_sap,
+                                           char            *p_service_name,
+                                           tNFA_SNEP_CBACK *p_cback);
 
 /*******************************************************************************
 **
@@ -267,7 +267,7 @@ NFC_API extern tNFA_STATUS NFA_SnepRegisterServer (UINT8           server_sap,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepRegisterClient (tNFA_SNEP_CBACK *p_cback);
+extern tNFA_STATUS NFA_SnepRegisterClient (tNFA_SNEP_CBACK *p_cback);
 
 /*******************************************************************************
 **
@@ -286,7 +286,7 @@ NFC_API extern tNFA_STATUS NFA_SnepRegisterClient (tNFA_SNEP_CBACK *p_cback);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepDeregister (tNFA_HANDLE reg_handle);
+extern tNFA_STATUS NFA_SnepDeregister (tNFA_HANDLE reg_handle);
 
 /*******************************************************************************
 **
@@ -305,8 +305,8 @@ NFC_API extern tNFA_STATUS NFA_SnepDeregister (tNFA_HANDLE reg_handle);
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepConnect (tNFA_HANDLE     client_handle,
-                                            char            *p_service_name);
+extern tNFA_STATUS NFA_SnepConnect (tNFA_HANDLE     client_handle,
+                                    char            *p_service_name);
 
 /*******************************************************************************
 **
@@ -329,10 +329,10 @@ NFC_API extern tNFA_STATUS NFA_SnepConnect (tNFA_HANDLE     client_handle,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepGet (tNFA_HANDLE     conn_handle,
-                                        UINT32          buff_length,
-                                        UINT32          ndef_length,
-                                        UINT8           *p_ndef_buff);
+extern tNFA_STATUS NFA_SnepGet (tNFA_HANDLE     conn_handle,
+                                uint32_t        buff_length,
+                                uint32_t        ndef_length,
+                                uint8_t         *p_ndef_buff);
 
 /*******************************************************************************
 **
@@ -353,9 +353,9 @@ NFC_API extern tNFA_STATUS NFA_SnepGet (tNFA_HANDLE     conn_handle,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepPut (tNFA_HANDLE     conn_handle,
-                                        UINT32          ndef_length,
-                                        UINT8           *p_ndef_buff);
+extern tNFA_STATUS NFA_SnepPut (tNFA_HANDLE     conn_handle,
+                                uint32_t        ndef_length,
+                                uint8_t         *p_ndef_buff);
 
 /*******************************************************************************
 **
@@ -387,10 +387,10 @@ NFC_API extern tNFA_STATUS NFA_SnepPut (tNFA_HANDLE     conn_handle,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepGetResponse (tNFA_HANDLE         conn_handle,
-                                                tNFA_SNEP_RESP_CODE resp_code,
-                                                UINT32              ndef_length,
-                                                UINT8               *p_ndef_buff);
+extern tNFA_STATUS NFA_SnepGetResponse (tNFA_HANDLE         conn_handle,
+                                        tNFA_SNEP_RESP_CODE resp_code,
+                                        uint32_t            ndef_length,
+                                        uint8_t             *p_ndef_buff);
 
 /*******************************************************************************
 **
@@ -418,8 +418,8 @@ NFC_API extern tNFA_STATUS NFA_SnepGetResponse (tNFA_HANDLE         conn_handle,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepPutResponse (tNFA_HANDLE         conn_handle,
-                                                tNFA_SNEP_RESP_CODE resp_code);
+extern tNFA_STATUS NFA_SnepPutResponse (tNFA_HANDLE         conn_handle,
+                                        tNFA_SNEP_RESP_CODE resp_code);
 
 /*******************************************************************************
 **
@@ -441,8 +441,8 @@ NFC_API extern tNFA_STATUS NFA_SnepPutResponse (tNFA_HANDLE         conn_handle,
 **                  NFA_STATUS_FAILED otherwise
 **
 *******************************************************************************/
-NFC_API extern tNFA_STATUS NFA_SnepDisconnect (tNFA_HANDLE conn_handle,
-                                               BOOLEAN     flush);
+extern tNFA_STATUS NFA_SnepDisconnect (tNFA_HANDLE conn_handle,
+                                       bool        flush);
 
 /*******************************************************************************
 **
@@ -454,7 +454,7 @@ NFC_API extern tNFA_STATUS NFA_SnepDisconnect (tNFA_HANDLE conn_handle,
 ** Returns          The new or current trace level
 **
 *******************************************************************************/
-NFC_API extern UINT8 NFA_SnepSetTraceLevel (UINT8 new_level);
+extern uint8_t NFA_SnepSetTraceLevel (uint8_t new_level);
 
 #ifdef __cplusplus
 }

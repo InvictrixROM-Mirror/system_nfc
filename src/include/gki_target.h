@@ -32,20 +32,6 @@
 #define _BT_WIN32
 #endif
 
-/* define prefix for exporting APIs from libraries */
-#define EXPORT_API
-
-#ifndef BTE_BSE_WRAPPER
-#ifdef  BTE_SIM_APP
-#undef  EXPORT_API
-#define EXPORT_API  __declspec(dllexport)
-#endif
-#endif
-
-#define GKI_API EXPORT_API
-#define UDRV_API EXPORT_API
-
-
 /******************************************************************************
 **
 ** Task configuration
@@ -324,7 +310,7 @@ over HCI data and intentionally kept out of order */
 #endif
 
 /* The size of the buffers in pool 6,
-  BUF_SIZE = max SCO data 255 + sizeof(BT_HDR) = 8 + SCO packet header 3 + padding 2 = 268 */
+  BUF_SIZE = max SCO data 255 + sizeof(NFC_HDR) = 8 + SCO packet header 3 + padding 2 = 268 */
 #ifndef GKI_BUF6_SIZE
 #define GKI_BUF6_SIZE               268
 #endif
@@ -381,7 +367,7 @@ over HCI data and intentionally kept out of order */
 #define GKI_BUF8_MAX                30
 #endif
 
-#if defined(GKI_DEBUG) && (GKI_DEBUG == TRUE)
+#if (GKI_DEBUG == TRUE)
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
@@ -418,7 +404,7 @@ extern "C"
 {
 #endif
 
-EXPORT_API extern void LogMsg (UINT32 trace_set_mask, const char *fmt_str, ...);
+extern void LogMsg (uint32_t trace_set_mask, const char *fmt_str, ...);
 
 #ifdef __cplusplus
 }

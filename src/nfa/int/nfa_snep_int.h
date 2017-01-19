@@ -25,7 +25,7 @@
 #ifndef NFA_SNEP_INT_H
 #define NFA_SNEP_INT_H
 
-#if (defined (NFA_SNEP_INCLUDED) && (NFA_SNEP_INCLUDED==TRUE))
+#if (NFA_SNEP_INCLUDED == TRUE)
 #include "llcp_api.h"
 #include "nfa_snep_api.h"
 
@@ -58,22 +58,22 @@ enum
 /* data type for NFA_SNEP_API_START_DEFAULT_SERVER_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_SNEP_CBACK     *p_cback;
 } tNFA_SNEP_API_START_DEFAULT_SERVER;
 
 /* data type for NFA_SNEP_API_STOP_DEFAULT_SERVER_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_SNEP_CBACK     *p_cback;
 } tNFA_SNEP_API_STOP_DEFAULT_SERVER;
 
 /* data type for NFA_SNEP_API_REG_SERVER_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
-    UINT8               server_sap;
+    NFC_HDR              hdr;
+    uint8_t             server_sap;
     char                service_name[LLCP_MAX_SN_LEN + 1];
     tNFA_SNEP_CBACK     *p_cback;
 } tNFA_SNEP_API_REG_SERVER;
@@ -81,21 +81,21 @@ typedef struct
 /* data type for NFA_SNEP_API_REG_CLIENT_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_SNEP_CBACK     *p_cback;
 } tNFA_SNEP_API_REG_CLIENT;
 
 /* data type for NFA_SNEP_API_DEREG_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         reg_handle;     /* handle for registered server/client */
 } tNFA_SNEP_API_DEREG;
 
 /* data type for NFA_SNEP_API_CONNECT_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         client_handle;  /* handle for client                   */
     char                service_name[LLCP_MAX_SN_LEN + 1];
 } tNFA_SNEP_API_CONNECT;
@@ -103,36 +103,36 @@ typedef struct
 /* data type for NFA_SNEP_API_GET_REQ_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         conn_handle;    /* handle for data link connection      */
-    UINT32              buff_length;    /* length of buffer; acceptable length  */
-    UINT32              ndef_length;    /* length of current NDEF message       */
-    UINT8               *p_ndef_buff;   /* buffer for NDEF message              */
+    uint32_t            buff_length;    /* length of buffer; acceptable length  */
+    uint32_t            ndef_length;    /* length of current NDEF message       */
+    uint8_t             *p_ndef_buff;   /* buffer for NDEF message              */
 } tNFA_SNEP_API_GET_REQ;
 
 /* data type for NFA_SNEP_API_PUT_REQ_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         conn_handle;    /* handle for data link connection */
-    UINT32              ndef_length;    /* length of NDEF message          */
-    UINT8               *p_ndef_buff;   /* buffer for NDEF message         */
+    uint32_t            ndef_length;    /* length of NDEF message          */
+    uint8_t             *p_ndef_buff;   /* buffer for NDEF message         */
 } tNFA_SNEP_API_PUT_REQ;
 
 /* data type for NFA_SNEP_API_GET_RESP_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         conn_handle;    /* handle for data link connection */
     tNFA_SNEP_RESP_CODE resp_code;      /* response code                   */
-    UINT32              ndef_length;    /* length of NDEF message          */
-    UINT8               *p_ndef_buff;   /* buffer for NDEF message         */
+    uint32_t            ndef_length;    /* length of NDEF message          */
+    uint8_t             *p_ndef_buff;   /* buffer for NDEF message         */
 } tNFA_SNEP_API_GET_RESP;
 
 /* data type for NFA_SNEP_API_PUT_RESP_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         conn_handle;    /* handle for data link connection */
     tNFA_SNEP_RESP_CODE resp_code;      /* response code                   */
 } tNFA_SNEP_API_PUT_RESP;
@@ -140,15 +140,15 @@ typedef struct
 /* data type for NFA_SNEP_API_DISCONNECT_EVT */
 typedef struct
 {
-    BT_HDR              hdr;
+    NFC_HDR              hdr;
     tNFA_HANDLE         conn_handle;    /* response code                   */
-    BOOLEAN             flush;          /* TRUE if discard pending data    */
+    bool                flush;          /* TRUE if discard pending data    */
 } tNFA_SNEP_API_DISCONNECT;
 
 /* union of all event data types */
 typedef union
 {
-    BT_HDR                              hdr;
+    NFC_HDR                              hdr;
     tNFA_SNEP_API_START_DEFAULT_SERVER  api_start_default_server;   /* NFA_SNEP_API_START_DEFAULT_SERVER_EVT */
     tNFA_SNEP_API_STOP_DEFAULT_SERVER   api_stop_default_server;    /* NFA_SNEP_API_STOP_DEFAULT_SERVER_EVT  */
     tNFA_SNEP_API_REG_SERVER            api_reg_server;             /* NFA_SNEP_API_REG_SERVER_EVT   */
@@ -177,24 +177,24 @@ typedef union
 
 typedef struct
 {
-    UINT8               local_sap;      /* local SAP of service */
-    UINT8               remote_sap;     /* local SAP of service */
-    UINT8               flags;          /* internal flags       */
+    uint8_t             local_sap;      /* local SAP of service */
+    uint8_t             remote_sap;     /* local SAP of service */
+    uint8_t             flags;          /* internal flags       */
     tNFA_SNEP_CBACK    *p_cback;        /* callback for event   */
     TIMER_LIST_ENT      timer;          /* timer for client     */
 
-    UINT16              tx_miu;         /* adjusted MIU for throughput              */
-    BOOLEAN             congest;        /* TRUE if data link connection is congested */
-    BOOLEAN             rx_fragments;   /* TRUE if waiting more fragments            */
+    uint16_t            tx_miu;         /* adjusted MIU for throughput              */
+    bool                congest;        /* TRUE if data link connection is congested */
+    bool                rx_fragments;   /* TRUE if waiting more fragments            */
 
-    UINT8               tx_code;        /* transmitted code in request/response */
-    UINT8               rx_code;        /* received code in request/response    */
+    uint8_t             tx_code;        /* transmitted code in request/response */
+    uint8_t             rx_code;        /* received code in request/response    */
 
-    UINT32              acceptable_length;
-    UINT32              buff_length;    /* size of buffer for NDEF message   */
-    UINT32              ndef_length;    /* length of NDEF message            */
-    UINT32              cur_length;     /* currently sent or received length */
-    UINT8               *p_ndef_buff;   /* NDEF message buffer               */
+    uint32_t            acceptable_length;
+    uint32_t            buff_length;    /* size of buffer for NDEF message   */
+    uint32_t            ndef_length;    /* length of NDEF message            */
+    uint32_t            cur_length;     /* currently sent or received length */
+    uint8_t             *p_ndef_buff;   /* NDEF message buffer               */
 } tNFA_SNEP_CONN;
 
 /*
@@ -203,9 +203,9 @@ typedef struct
 typedef struct
 {
     tNFA_SNEP_CONN      conn[NFA_SNEP_MAX_CONN];
-    BOOLEAN             listen_enabled;
-    BOOLEAN             is_dta_mode;
-    UINT8               trace_level;
+    bool                listen_enabled;
+    bool                is_dta_mode;
+    uint8_t             trace_level;
 } tNFA_SNEP_CB;
 
 /*
@@ -216,7 +216,7 @@ typedef struct
 typedef struct
 {
     tNFA_HANDLE         conn_handle;    /* connection handle for default server   */
-    UINT8               *p_rx_ndef;     /* buffer to receive NDEF                 */
+    uint8_t             *p_rx_ndef;     /* buffer to receive NDEF                 */
 } tNFA_SNEP_DEFAULT_CONN;
 
 #define NFA_SNEP_DEFAULT_MAX_CONN    3
@@ -245,19 +245,19 @@ extern tNFA_SNEP_DEFAULT_CB nfa_snep_default_cb;
 /*
 **  nfa_snep_main.c
 */
-void nfa_snep_init (BOOLEAN is_dta_mode);
+void nfa_snep_init (bool    is_dta_mode);
 /*
 **  nfa_snep_default.c
 */
 void nfa_snep_default_init (void);
-BOOLEAN nfa_snep_start_default_server (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_stop_default_server (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_start_default_server (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_stop_default_server (tNFA_SNEP_MSG *p_msg);
 /*
 **  nfa_snep_srv.c
 */
-UINT8 nfa_snep_allocate_cb (void);
-void nfa_snep_deallocate_cb (UINT8 xx);
-void nfa_snep_send_msg (UINT8 opcode, UINT8 dlink);
+uint8_t nfa_snep_allocate_cb (void);
+void nfa_snep_deallocate_cb (uint8_t xx);
+void nfa_snep_send_msg (uint8_t opcode, uint8_t dlink);
 
 void nfa_snep_llcp_cback (tLLCP_SAP_CBACK_DATA *p_data);
 void nfa_snep_proc_llcp_data_ind (tLLCP_SAP_CBACK_DATA  *p_data);
@@ -269,15 +269,15 @@ void nfa_snep_proc_llcp_congest (tLLCP_SAP_CBACK_DATA  *p_data);
 void nfa_snep_proc_llcp_link_status (tLLCP_SAP_CBACK_DATA  *p_data);
 void nfa_snep_proc_llcp_tx_complete (tLLCP_SAP_CBACK_DATA  *p_data);
 
-BOOLEAN nfa_snep_reg_server (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_reg_client (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_dereg (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_connect (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_put_resp (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_get_resp (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_put_req (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_get_req (tNFA_SNEP_MSG *p_msg);
-BOOLEAN nfa_snep_disconnect (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_reg_server (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_reg_client (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_dereg (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_connect (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_put_resp (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_get_resp (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_put_req (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_get_req (tNFA_SNEP_MSG *p_msg);
+bool    nfa_snep_disconnect (tNFA_SNEP_MSG *p_msg);
 
-#endif /* (defined (NFA_SNEP_INCLUDED) && (NFA_SNEP_INCLUDED==TRUE)) */
+#endif /* (NFA_SNEP_INCLUDED == TRUE) */
 #endif /* NFA_SNEP_INT_H */

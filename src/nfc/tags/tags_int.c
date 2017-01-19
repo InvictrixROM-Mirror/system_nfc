@@ -75,18 +75,18 @@ const tT2T_CMD_RSP_INFO t2t_cmd_rsp_infos[] =
 const tT2T_INIT_TAG t2t_init_content[] =
 {
 /*  Tag Name        is_multi_v  Ver Block                   Ver No                               Vbitmask   to_calc_cc CC3      OTP     BLPB */
-    {TAG_MIFARE_MID,    TRUE,   T2T_MIFARE_VERSION_BLOCK,   T2T_MIFARE_ULTRALIGHT_VER_NO,        0xFFFF,    FALSE,     0x06,    FALSE,  T2T_DEFAULT_LOCK_BLPB},
-    {TAG_MIFARE_MID,    TRUE,   T2T_MIFARE_VERSION_BLOCK,   T2T_MIFARE_ULTRALIGHT_FAMILY_VER_NO, 0xFFFF,    TRUE,      0x00,    FALSE,  T2T_DEFAULT_LOCK_BLPB},
-    {TAG_KOVIO_MID,     FALSE,  0x00,                       0x00,                                0x0000,    FALSE,     0x1D,    TRUE,   0x04},
-    {TAG_INFINEON_MID,  TRUE,   T2T_INFINEON_VERSION_BLOCK, T2T_INFINEON_MYD_MOVE_LEAN,          0xFFF0,    FALSE,     0x06,    FALSE,  T2T_DEFAULT_LOCK_BLPB},
-    {TAG_INFINEON_MID,  TRUE,   T2T_INFINEON_VERSION_BLOCK, T2T_INFINEON_MYD_MOVE,               0xFFF0,    FALSE,     0x10,    FALSE,  T2T_DEFAULT_LOCK_BLPB},
-    {TAG_BRCM_MID,      TRUE,   T2T_BRCM_VERSION_BLOCK,     T2T_BRCM_STATIC_MEM,                 0xFFFF,    FALSE,     0x06,    FALSE,  T2T_DEFAULT_LOCK_BLPB},
-    {TAG_BRCM_MID,      TRUE,   T2T_BRCM_VERSION_BLOCK,     T2T_BRCM_DYNAMIC_MEM,                0xFFFF,    FALSE,     0x3C,    FALSE,  T2T_DEFAULT_LOCK_BLPB}
+    {TAG_MIFARE_MID,    true,   T2T_MIFARE_VERSION_BLOCK,   T2T_MIFARE_ULTRALIGHT_VER_NO,        0xFFFF,    false,     0x06,    false,  T2T_DEFAULT_LOCK_BLPB},
+    {TAG_MIFARE_MID,    true,   T2T_MIFARE_VERSION_BLOCK,   T2T_MIFARE_ULTRALIGHT_FAMILY_VER_NO, 0xFFFF,    true,      0x00,    false,  T2T_DEFAULT_LOCK_BLPB},
+    {TAG_KOVIO_MID,     false,  0x00,                       0x00,                                0x0000,    false,     0x1D,    true,   0x04},
+    {TAG_INFINEON_MID,  true,   T2T_INFINEON_VERSION_BLOCK, T2T_INFINEON_MYD_MOVE_LEAN,          0xFFF0,    false,     0x06,    false,  T2T_DEFAULT_LOCK_BLPB},
+    {TAG_INFINEON_MID,  true,   T2T_INFINEON_VERSION_BLOCK, T2T_INFINEON_MYD_MOVE,               0xFFF0,    false,     0x10,    false,  T2T_DEFAULT_LOCK_BLPB},
+    {TAG_BRCM_MID,      true,   T2T_BRCM_VERSION_BLOCK,     T2T_BRCM_STATIC_MEM,                 0xFFFF,    false,     0x06,    false,  T2T_DEFAULT_LOCK_BLPB},
+    {TAG_BRCM_MID,      true,   T2T_BRCM_VERSION_BLOCK,     T2T_BRCM_DYNAMIC_MEM,                0xFFFF,    false,     0x3C,    false,  T2T_DEFAULT_LOCK_BLPB}
 
 };
 
-const UINT8 t4t_v10_ndef_tag_aid[T4T_V10_NDEF_TAG_AID_LEN] = {0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x00};
-const UINT8 t4t_v20_ndef_tag_aid[T4T_V20_NDEF_TAG_AID_LEN] = {0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01};
+const uint8_t t4t_v10_ndef_tag_aid[T4T_V10_NDEF_TAG_AID_LEN] = {0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x00};
+const uint8_t t4t_v20_ndef_tag_aid[T4T_V20_NDEF_TAG_AID_LEN] = {0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01};
 
 #if (BT_TRACE_PROTOCOL == TRUE)
 const char * const t1t_cmd_str[] = {
@@ -119,7 +119,7 @@ static unsigned int tags_ones32 (register unsigned int x);
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-const tT1T_CMD_RSP_INFO * t1t_cmd_to_rsp_info (UINT8 opcode)
+const tT1T_CMD_RSP_INFO * t1t_cmd_to_rsp_info (uint8_t opcode)
 {
     const tT1T_CMD_RSP_INFO *p_ret = NULL, *p;
     int xx;
@@ -147,7 +147,7 @@ const tT1T_CMD_RSP_INFO * t1t_cmd_to_rsp_info (UINT8 opcode)
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-const tT1T_INIT_TAG * t1t_tag_init_data (UINT8 tag_model)
+const tT1T_INIT_TAG * t1t_tag_init_data (uint8_t tag_model)
 {
     const tT1T_INIT_TAG *p_ret = NULL, *p;
     int xx;
@@ -174,7 +174,7 @@ const tT1T_INIT_TAG * t1t_tag_init_data (UINT8 tag_model)
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-const tT2T_INIT_TAG * t2t_tag_init_data (UINT8 manufacturer_id, BOOLEAN b_valid_ver, UINT16 version_no)
+const tT2T_INIT_TAG * t2t_tag_init_data (uint8_t manufacturer_id, bool    b_valid_ver, uint16_t version_no)
 {
     const tT2T_INIT_TAG *p_ret = NULL, *p;
     int xx;
@@ -205,7 +205,7 @@ const tT2T_INIT_TAG * t2t_tag_init_data (UINT8 manufacturer_id, BOOLEAN b_valid_
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-const tT2T_CMD_RSP_INFO * t2t_cmd_to_rsp_info (UINT8 opcode)
+const tT2T_CMD_RSP_INFO * t2t_cmd_to_rsp_info (uint8_t opcode)
 {
     const tT2T_CMD_RSP_INFO *p_ret = NULL, *p;
     int xx;
@@ -231,9 +231,9 @@ const tT2T_CMD_RSP_INFO * t2t_cmd_to_rsp_info (UINT8 opcode)
 ** Returns          RW/CE event code
 **
 *******************************************************************************/
-UINT8 t1t_info_to_evt (const tT1T_CMD_RSP_INFO * p_info)
+uint8_t t1t_info_to_evt (const tT1T_CMD_RSP_INFO * p_info)
 {
-    return ((UINT8) (p_info - t1t_cmd_rsp_infos) + RW_T1T_FIRST_EVT);
+    return ((uint8_t) (p_info - t1t_cmd_rsp_infos) + RW_T1T_FIRST_EVT);
 }
 
 /*******************************************************************************
@@ -245,9 +245,9 @@ UINT8 t1t_info_to_evt (const tT1T_CMD_RSP_INFO * p_info)
 ** Returns          RW/CE event code
 **
 *******************************************************************************/
-UINT8 t2t_info_to_evt (const tT2T_CMD_RSP_INFO * p_info)
+uint8_t t2t_info_to_evt (const tT2T_CMD_RSP_INFO * p_info)
 {
-    return ((UINT8) (p_info - t2t_cmd_rsp_infos) + RW_T2T_FIRST_EVT);
+    return ((uint8_t) (p_info - t2t_cmd_rsp_infos) + RW_T2T_FIRST_EVT);
 }
 
 #if (BT_TRACE_PROTOCOL == TRUE)

@@ -27,18 +27,6 @@
 #include <hardware/nfc.h>
 #include "data_types.h"
 
-/****************************************************************************
-** NFC_HDR header definition for NFC messages
-*****************************************************************************/
-typedef struct
-{
-    UINT16          event;
-    UINT16          len;
-    UINT16          offset;
-    UINT16          layer_specific;
-} NFC_HDR;
-#define NFC_HDR_SIZE (sizeof (NFC_HDR))
-
 /*******************************************************************************
 ** tHAL_HCI_NETWK_CMD Definitions
 *******************************************************************************/
@@ -48,10 +36,10 @@ typedef struct
 #define HAL_NFC_HCI_UICC2_HOST      0x04
 
 
-typedef UINT8 tHAL_NFC_STATUS;
+typedef uint8_t tHAL_NFC_STATUS;
 typedef void (tHAL_NFC_STATUS_CBACK) (tHAL_NFC_STATUS status);
-typedef void (tHAL_NFC_CBACK) (UINT8 event, tHAL_NFC_STATUS status);
-typedef void (tHAL_NFC_DATA_CBACK) (UINT16 data_len, UINT8   *p_data);
+typedef void (tHAL_NFC_CBACK) (uint8_t event, tHAL_NFC_STATUS status);
+typedef void (tHAL_NFC_DATA_CBACK) (uint16_t data_len, uint8_t *p_data);
 
 /*******************************************************************************
 ** tHAL_NFC_ENTRY HAL entry-point lookup table
@@ -61,30 +49,30 @@ typedef void (tHAL_API_INITIALIZE) (void);
 typedef void (tHAL_API_TERMINATE) (void);
 typedef void (tHAL_API_OPEN) (tHAL_NFC_CBACK *p_hal_cback, tHAL_NFC_DATA_CBACK *p_data_cback);
 typedef void (tHAL_API_CLOSE) (void);
-typedef void (tHAL_API_CORE_INITIALIZED) (UINT16 data_len, UINT8 *p_core_init_rsp_params);
-typedef void (tHAL_API_WRITE) (UINT16 data_len, UINT8 *p_data);
-typedef BOOLEAN (tHAL_API_PREDISCOVER) (void);
+typedef void (tHAL_API_CORE_INITIALIZED) (uint16_t data_len, uint8_t *p_core_init_rsp_params);
+typedef void (tHAL_API_WRITE) (uint16_t data_len, uint8_t *p_data);
+typedef bool    (tHAL_API_PREDISCOVER) (void);
 typedef void (tHAL_API_CONTROL_GRANTED) (void);
 typedef void (tHAL_API_POWER_CYCLE) (void);
-typedef UINT8 (tHAL_API_GET_MAX_NFCEE) (void);
+typedef uint8_t (tHAL_API_GET_MAX_NFCEE) (void);
 
 
 #define NFC_HAL_DM_PRE_SET_MEM_LEN  5
 typedef struct
 {
-    UINT32          addr;
-    UINT32          data;
+    uint32_t        addr;
+    uint32_t        data;
 } tNFC_HAL_DM_PRE_SET_MEM;
 
 /* data members for NFC_HAL-HCI */
 typedef struct
 {
-    BOOLEAN nfc_hal_prm_nvm_required;       /* set nfc_hal_prm_nvm_required to TRUE, if the platform wants to abort PRM process without NVM */
-    UINT16  nfc_hal_nfcc_enable_timeout;    /* max time to wait for RESET NTF after setting REG_PU to high */
-    UINT16  nfc_hal_post_xtal_timeout;      /* max time to wait for RESET NTF after setting Xtal frequency */
-#if (defined(NFC_HAL_HCI_INCLUDED) && (NFC_HAL_HCI_INCLUDED == TRUE))
-    BOOLEAN nfc_hal_first_boot;             /* set nfc_hal_first_boot to TRUE, if platform enables NFC for the first time after bootup */
-    UINT8   nfc_hal_hci_uicc_support;       /* set nfc_hal_hci_uicc_support to Zero, if no UICC is supported otherwise set corresponding bit(s) for every supported UICC(s) */
+    bool    nfc_hal_prm_nvm_required;       /* set nfc_hal_prm_nvm_required to TRUE, if the platform wants to abort PRM process without NVM */
+    uint16_t  nfc_hal_nfcc_enable_timeout;    /* max time to wait for RESET NTF after setting REG_PU to high */
+    uint16_t  nfc_hal_post_xtal_timeout;      /* max time to wait for RESET NTF after setting Xtal frequency */
+#if (NFC_HAL_HCI_INCLUDED == TRUE)
+    bool    nfc_hal_first_boot;             /* set nfc_hal_first_boot to TRUE, if platform enables NFC for the first time after bootup */
+    uint8_t nfc_hal_hci_uicc_support;       /* set nfc_hal_hci_uicc_support to Zero, if no UICC is supported otherwise set corresponding bit(s) for every supported UICC(s) */
 #endif
 } tNFC_HAL_CFG;
 
@@ -113,13 +101,6 @@ extern "C"
 {
 #endif
 
-/* Toolset-specific macro for exporting API funcitons */
-#if (defined(NFC_HAL_TARGET) && (NFC_HAL_TARGET == TRUE)) && (defined(_WINDLL))
-#define EXPORT_HAL_API  __declspec(dllexport)
-#else
-#define EXPORT_HAL_API
-#endif
-
 /*******************************************************************************
 **
 ** Function         HAL_NfcInitialize
@@ -131,7 +112,7 @@ extern "C"
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcInitialize(void);
+void HAL_NfcInitialize(void);
 
 /*******************************************************************************
 **
@@ -142,7 +123,7 @@ EXPORT_HAL_API void HAL_NfcInitialize(void);
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcTerminate(void);
+void HAL_NfcTerminate(void);
 
 /*******************************************************************************
 **
@@ -156,7 +137,7 @@ EXPORT_HAL_API void HAL_NfcTerminate(void);
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcOpen (tHAL_NFC_CBACK *p_hal_cback, tHAL_NFC_DATA_CBACK *p_data_cback);
+void HAL_NfcOpen (tHAL_NFC_CBACK *p_hal_cback, tHAL_NFC_DATA_CBACK *p_data_cback);
 
 /*******************************************************************************
 **
@@ -168,7 +149,7 @@ EXPORT_HAL_API void HAL_NfcOpen (tHAL_NFC_CBACK *p_hal_cback, tHAL_NFC_DATA_CBAC
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcClose (void);
+void HAL_NfcClose (void);
 
 /*******************************************************************************
 **
@@ -182,7 +163,7 @@ EXPORT_HAL_API void HAL_NfcClose (void);
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcCoreInitialized (UINT16 data_len, UINT8 *p_core_init_rsp_params);
+void HAL_NfcCoreInitialized (uint16_t data_len, uint8_t *p_core_init_rsp_params);
 
 /*******************************************************************************
 **
@@ -196,7 +177,7 @@ EXPORT_HAL_API void HAL_NfcCoreInitialized (UINT16 data_len, UINT8 *p_core_init_
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcWrite (UINT16 data_len, UINT8 *p_data);
+void HAL_NfcWrite (uint16_t data_len, uint8_t *p_data);
 
 /*******************************************************************************
 **
@@ -211,7 +192,7 @@ EXPORT_HAL_API void HAL_NfcWrite (UINT16 data_len, UINT8 *p_data);
 **                  FALSE if no vendor-specific pre-discovery actions are needed.
 **
 *******************************************************************************/
-EXPORT_HAL_API BOOLEAN HAL_NfcPreDiscover (void);
+bool    HAL_NfcPreDiscover (void);
 
 /*******************************************************************************
 **
@@ -230,7 +211,7 @@ EXPORT_HAL_API BOOLEAN HAL_NfcPreDiscover (void);
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcControlGranted (void);
+void HAL_NfcControlGranted (void);
 
 /*******************************************************************************
 **
@@ -243,7 +224,7 @@ EXPORT_HAL_API void HAL_NfcControlGranted (void);
 ** Returns          void
 **
 *******************************************************************************/
-EXPORT_HAL_API void HAL_NfcPowerCycle (void);
+void HAL_NfcPowerCycle (void);
 
 /*******************************************************************************
 **
@@ -254,7 +235,7 @@ EXPORT_HAL_API void HAL_NfcPowerCycle (void);
 ** Returns          the maximum number of NFCEEs supported by NFCC
 **
 *******************************************************************************/
-EXPORT_HAL_API UINT8 HAL_NfcGetMaxNfcee (void);
+uint8_t HAL_NfcGetMaxNfcee (void);
 
 
 #ifdef __cplusplus

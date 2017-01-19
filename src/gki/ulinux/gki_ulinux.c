@@ -26,6 +26,7 @@
 #include <time.h>
 #include "gki_int.h"
 #include "gki_target.h"
+#include "bt_trace.h"
 
 /* Temp android logging...move to android tgt config file */
 
@@ -79,9 +80,9 @@ static pthread_t            timer_thread_id = 0;
 
 typedef struct
 {
-    UINT8 task_id;          /* GKI task id */
+    uint8_t task_id;          /* GKI task id */
     TASKPTR task_entry;     /* Task entry function*/
-    UINT32 params;          /* Extra params to pass to task entry function */
+    uintptr_t params;          /* Extra params to pass to task entry function */
     pthread_cond_t* pCond;	/* for android*/
     pthread_mutex_t* pMutex;  /* for android*/
 } gki_pthread_info_t;
@@ -96,7 +97,7 @@ gki_pthread_info_t gki_pthread_info[GKI_MAX_TASKS];
 ** Returns          void
 **
 *******************************************************************************/
-void gki_task_entry(UINT32 params)
+void gki_task_entry(uintptr_t params)
 {
     pthread_t thread_id = pthread_self();
     gki_pthread_info_t *p_pthread_info = (gki_pthread_info_t *)params;
@@ -150,7 +151,7 @@ void GKI_init(void)
 
     gki_buffer_init();
     gki_timers_init();
-    gki_cb.com.OSTicks = (UINT32) times(0);
+    gki_cb.com.OSTicks = (uint32_t) times(0);
 
     pthread_mutexattr_init(&attr);
 
@@ -183,7 +184,7 @@ void GKI_init(void)
 ** Returns          Tick count of native OS.
 **
 *******************************************************************************/
-UINT32 GKI_get_os_tick_count(void)
+uint32_t GKI_get_os_tick_count(void)
 {
 
     /* TODO - add any OS specific code here
@@ -210,10 +211,10 @@ UINT32 GKI_get_os_tick_count(void)
 **                  of the function prototype.
 **
 *******************************************************************************/
-UINT8 GKI_create_task (TASKPTR task_entry, UINT8 task_id, INT8 *taskname, UINT16 *stack, UINT16 stacksize, void* pCondVar, void* pMutex)
+uint8_t GKI_create_task (TASKPTR task_entry, uint8_t task_id, int8_t *taskname, uint16_t *stack, uint16_t stacksize, void* pCondVar, void* pMutex)
 {
-    UINT16  i;
-    UINT8   *p;
+    uint16_t  i;
+    uint8_t *p;
     struct sched_param param;
     int policy, ret = 0;
     pthread_condattr_t attr;
@@ -272,7 +273,7 @@ UINT8 GKI_create_task (TASKPTR task_entry, UINT8 task_id, INT8 *taskname, UINT16
 
     if(pthread_getschedparam(gki_cb.os.thread_id[task_id], &policy, &param)==0)
     {
-#if defined(PBS_SQL_TASK)
+#if (PBS_SQL_TASK == TRUE)
          if (task_id == PBS_SQL_TASK)
          {
              GKI_TRACE_0("PBS SQL lowest priority task");
@@ -317,7 +318,7 @@ extern int release_wake_lock(const char* id);
 
 void GKI_shutdown(void)
 {
-    UINT8 task_id;
+    uint8_t task_id;
     volatile int    *p_run_cond = &gki_cb.os.no_timer_suspend;
     int     oldCOnd = 0;
 #if ( FALSE == GKI_PTHREAD_JOINABLE )
@@ -396,12 +397,12 @@ void GKI_shutdown(void)
  ** Returns         void
  **
  *********************************************************************************/
-void gki_system_tick_start_stop_cback(BOOLEAN start)
+void gki_system_tick_start_stop_cback(bool    start)
 {
     tGKI_OS         *p_os = &gki_cb.os;
     volatile int    *p_run_cond = &p_os->no_timer_suspend;
     static volatile int wake_lock_count;
-    if ( FALSE == start )
+    if (start == false)
     {
         /* this can lead to a race condition. however as we only read this variable in the timer loop
          * we should be fine with this approach. otherwise uncomment below mutexes.
@@ -582,7 +583,7 @@ void GKI_run (void *p_task_id)
 *******************************************************************************/
 void GKI_stop (void)
 {
-    UINT8 task_id;
+    uint8_t task_id;
 
     /*  gki_queue_timer_cback(FALSE); */
     /* TODO - add code here if needed*/
@@ -613,10 +614,10 @@ void GKI_stop (void)
 ** Returns          the event mask of received events or zero if timeout
 **
 *******************************************************************************/
-UINT16 GKI_wait (UINT16 flag, UINT32 timeout)
+uint16_t GKI_wait (uint16_t flag, uint32_t timeout)
 {
-    UINT16 evt;
-    UINT8 rtask;
+    uint16_t evt;
+    uint8_t rtask;
     struct timespec abstime = { 0, 0 };
     int sec;
     int nano_sec;
@@ -746,9 +747,9 @@ UINT16 GKI_wait (UINT16 flag, UINT32 timeout)
 **
 *******************************************************************************/
 
-void GKI_delay (UINT32 timeout)
+void GKI_delay (uint32_t timeout)
 {
-    UINT8 rtask = GKI_get_taskid();
+    uint8_t rtask = GKI_get_taskid();
     struct timespec delay;
     int err;
 
@@ -792,7 +793,7 @@ void GKI_delay (UINT32 timeout)
 ** Returns          GKI_SUCCESS if all OK, else GKI_FAILURE
 **
 *******************************************************************************/
-UINT8 GKI_send_event (UINT8 task_id, UINT16 event)
+uint8_t GKI_send_event (uint8_t task_id, uint16_t event)
 {
     GKI_TRACE_2("GKI_send_event %d %x", task_id, event);
 
@@ -835,7 +836,7 @@ UINT8 GKI_send_event (UINT8 task_id, UINT16 event)
 **                  body of the function.
 **
 *******************************************************************************/
-UINT8 GKI_isend_event (UINT8 task_id, UINT16 event)
+uint8_t GKI_isend_event (uint8_t task_id, uint16_t event)
 {
 
     GKI_TRACE_2("GKI_isend_event %d %x", task_id, event);
@@ -858,7 +859,7 @@ UINT8 GKI_isend_event (UINT8 task_id, UINT16 event)
 **                  OS-specific method to determine the current task.
 **
 *******************************************************************************/
-UINT8 GKI_get_taskid (void)
+uint8_t GKI_get_taskid (void)
 {
     int i;
 
@@ -892,7 +893,7 @@ UINT8 GKI_get_taskid (void)
 ** NOTE             this function needs no customization
 **
 *******************************************************************************/
-INT8 *GKI_map_taskname (UINT8 task_id)
+int8_t *GKI_map_taskname (uint8_t task_id)
 {
     GKI_TRACE_1("GKI_map_taskname %d", task_id);
 
@@ -907,7 +908,7 @@ INT8 *GKI_map_taskname (UINT8 task_id)
     }
     else
     {
-        return (INT8*) "BAD";
+        return (int8_t*) "BAD";
     }
 }
 
@@ -968,9 +969,9 @@ void GKI_disable (void)
 **
 *******************************************************************************/
 
-void GKI_exception (UINT16 code, char *msg)
+void GKI_exception (uint16_t code, char *msg)
 {
-    UINT8 task_id;
+    uint8_t task_id;
     int i = 0;
 
     GKI_TRACE_ERROR_0( "GKI_exception(): Task State Table");
@@ -1026,13 +1027,13 @@ void GKI_exception (UINT16 code, char *msg)
 ** NOTE             This function is only called by OBEX.
 **
 *******************************************************************************/
-INT8 *GKI_get_time_stamp (INT8 *tbuf)
+int8_t *GKI_get_time_stamp (int8_t *tbuf)
 {
-    UINT32 ms_time;
-    UINT32 s_time;
-    UINT32 m_time;
-    UINT32 h_time;
-    INT8   *p_out = tbuf;
+    uint32_t ms_time;
+    uint32_t s_time;
+    uint32_t m_time;
+    uint32_t h_time;
+    int8_t *p_out = tbuf;
 
     gki_cb.com.OSTicks = times(0);
     ms_time = GKI_TICKS_TO_MS(gki_cb.com.OSTicks);
@@ -1044,17 +1045,17 @@ INT8 *GKI_get_time_stamp (INT8 *tbuf)
     s_time  -= m_time*60;
     m_time  -= h_time*60;
 
-    *p_out++ = (INT8)((h_time / 10) + '0');
-    *p_out++ = (INT8)((h_time % 10) + '0');
+    *p_out++ = (int8_t)((h_time / 10) + '0');
+    *p_out++ = (int8_t)((h_time % 10) + '0');
     *p_out++ = ':';
-    *p_out++ = (INT8)((m_time / 10) + '0');
-    *p_out++ = (INT8)((m_time % 10) + '0');
+    *p_out++ = (int8_t)((m_time / 10) + '0');
+    *p_out++ = (int8_t)((m_time % 10) + '0');
     *p_out++ = ':';
-    *p_out++ = (INT8)((s_time / 10) + '0');
-    *p_out++ = (INT8)((s_time % 10) + '0');
+    *p_out++ = (int8_t)((s_time / 10) + '0');
+    *p_out++ = (int8_t)((s_time % 10) + '0');
     *p_out++ = ':';
-    *p_out++ = (INT8)((ms_time / 10) + '0');
-    *p_out++ = (INT8)((ms_time % 10) + '0');
+    *p_out++ = (int8_t)((ms_time / 10) + '0');
+    *p_out++ = (int8_t)((ms_time % 10) + '0');
     *p_out++ = ':';
     *p_out   = 0;
 
@@ -1099,7 +1100,7 @@ void GKI_register_mempool (void *p_mem)
 **                  dynamic memory allocation is used.
 **
 *******************************************************************************/
-void *GKI_os_malloc (UINT32 size)
+void *GKI_os_malloc (uint32_t size)
 {
     return (malloc(size));
 }
@@ -1142,7 +1143,7 @@ void GKI_os_free (void *p_mem)
 **                  put specific code here.
 **
 *******************************************************************************/
-UINT8 GKI_suspend_task (UINT8 task_id)
+uint8_t GKI_suspend_task (uint8_t task_id)
 {
     GKI_TRACE_1("GKI_suspend_task %d - NOT implemented", task_id);
 
@@ -1168,7 +1169,7 @@ UINT8 GKI_suspend_task (UINT8 task_id)
 **                  put specific code here.
 **
 *******************************************************************************/
-UINT8 GKI_resume_task (UINT8 task_id)
+uint8_t GKI_resume_task (uint8_t task_id)
 {
     GKI_TRACE_1("GKI_resume_task %d - NOT implemented", task_id);
 
@@ -1194,7 +1195,7 @@ UINT8 GKI_resume_task (UINT8 task_id)
 **                  put specific code here to kill a task.
 **
 *******************************************************************************/
-void GKI_exit_task (UINT8 task_id)
+void GKI_exit_task (uint8_t task_id)
 {
     GKI_disable();
     gki_cb.com.OSRdyTbl[task_id] = TASK_DEAD;
@@ -1262,11 +1263,11 @@ void GKI_sched_unlock(void)
 ** Description      shift memory down (to make space to insert a record)
 **
 *******************************************************************************/
-void GKI_shiftdown (UINT8 *p_mem, UINT32 len, UINT32 shift_amount)
+void GKI_shiftdown (uint8_t *p_mem, uint32_t len, uint32_t shift_amount)
 {
-    register UINT8 *ps = p_mem + len - 1;
-    register UINT8 *pd = ps + shift_amount;
-    register UINT32 xx;
+    register uint8_t *ps = p_mem + len - 1;
+    register uint8_t *pd = ps + shift_amount;
+    register uint32_t xx;
 
     for (xx = 0; xx < len; xx++)
         *pd-- = *ps--;
@@ -1279,11 +1280,11 @@ void GKI_shiftdown (UINT8 *p_mem, UINT32 len, UINT32 shift_amount)
 ** Description      shift memory up (to delete a record)
 **
 *******************************************************************************/
-void GKI_shiftup (UINT8 *p_dest, UINT8 *p_src, UINT32 len)
+void GKI_shiftup (uint8_t *p_dest, uint8_t *p_src, uint32_t len)
 {
-    register UINT8 *ps = p_src;
-    register UINT8 *pd = p_dest;
-    register UINT32 xx;
+    register uint8_t *ps = p_src;
+    register uint8_t *pd = p_dest;
+    register uint32_t xx;
 
     for (xx = 0; xx < len; xx++)
         *pd++ = *ps++;

@@ -40,7 +40,7 @@
 #define llcp_cleanup()
 #endif
 
-#if (defined (NFA_INCLUDED) && NFA_INCLUDED == TRUE)
+#if (NFA_INCLUDED == TRUE)
 #include "nfa_sys.h"
 #include "nfa_dm_int.h"
 #endif
@@ -56,9 +56,9 @@
 ** Returns          void
 **
 *******************************************************************************/
-void nfc_start_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
+void nfc_start_timer (TIMER_LIST_ENT *p_tle, uint16_t type, uint32_t timeout)
 {
-    BT_HDR *p_msg;
+    NFC_HDR *p_msg;
 
     /* if timer list is currently empty, start periodic GKI timer */
     if (nfc_cb.timer_queue.p_first == NULL)
@@ -67,7 +67,7 @@ void nfc_start_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
         if (GKI_get_taskid () != NFC_TASK)
         {
             /* post event to start timer in NFC task */
-            if ((p_msg = (BT_HDR *) GKI_getbuf (BT_HDR_SIZE)) != NULL)
+            if ((p_msg = (NFC_HDR *) GKI_getbuf (NFC_HDR_SIZE)) != NULL)
             {
                 p_msg->event = BT_EVT_TO_START_TIMER;
                 GKI_send_msg (NFC_TASK, NFC_MBOX_ID, p_msg);
@@ -76,7 +76,7 @@ void nfc_start_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
         else
         {
             /* Start nfc_task 1-sec resolution timer */
-            GKI_start_timer (NFC_TIMER_ID, GKI_SECS_TO_TICKS (1), TRUE);
+            GKI_start_timer (NFC_TIMER_ID, GKI_SECS_TO_TICKS (1), true);
         }
     }
 
@@ -97,7 +97,7 @@ void nfc_start_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
 ** Returns          time in second
 **
 *******************************************************************************/
-UINT32 nfc_remaining_time (TIMER_LIST_ENT *p_tle)
+uint32_t nfc_remaining_time (TIMER_LIST_ENT *p_tle)
 {
     return (GKI_get_remaining_ticks (&nfc_cb.timer_queue, p_tle));
 }
@@ -178,9 +178,9 @@ void nfc_stop_timer (TIMER_LIST_ENT *p_tle)
 ** Returns          void
 **
 *******************************************************************************/
-void nfc_start_quick_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
+void nfc_start_quick_timer (TIMER_LIST_ENT *p_tle, uint16_t type, uint32_t timeout)
 {
-    BT_HDR *p_msg;
+    NFC_HDR *p_msg;
 
     /* if timer list is currently empty, start periodic GKI timer */
     if (nfc_cb.quick_timer_queue.p_first == NULL)
@@ -189,7 +189,7 @@ void nfc_start_quick_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
         if (GKI_get_taskid () != NFC_TASK)
         {
             /* post event to start timer in NFC task */
-            if ((p_msg = (BT_HDR *) GKI_getbuf (BT_HDR_SIZE)) != NULL)
+            if ((p_msg = (NFC_HDR *) GKI_getbuf (NFC_HDR_SIZE)) != NULL)
             {
                 p_msg->event = BT_EVT_TO_START_QUICK_TIMER;
                 GKI_send_msg (NFC_TASK, NFC_MBOX_ID, p_msg);
@@ -198,7 +198,8 @@ void nfc_start_quick_timer (TIMER_LIST_ENT *p_tle, UINT16 type, UINT32 timeout)
         else
         {
             /* Quick-timer is required for LLCP */
-            GKI_start_timer (NFC_QUICK_TIMER_ID, ((GKI_SECS_TO_TICKS (1) / QUICK_TIMER_TICKS_PER_SEC)), TRUE);
+            GKI_start_timer (NFC_QUICK_TIMER_ID, ((GKI_SECS_TO_TICKS (1) / QUICK_TIMER_TICKS_PER_SEC)),
+                             true);
         }
     }
 
@@ -313,10 +314,10 @@ void nfc_process_quick_timer_evt (void)
 *******************************************************************************/
 void nfc_task_shutdown_nfcc (void)
 {
-    BT_HDR        *p_msg;
+    NFC_HDR        *p_msg;
 
     /* Free any messages still in the mbox */
-    while ((p_msg = (BT_HDR *) GKI_read_mbox (NFC_MBOX_ID)) != NULL)
+    while ((p_msg = (NFC_HDR *) GKI_read_mbox (NFC_MBOX_ID)) != NULL)
     {
         GKI_freebuf (p_msg);
     }
@@ -344,7 +345,7 @@ void nfc_task_shutdown_nfcc (void)
         /* Stop the timers */
         GKI_stop_timer (NFC_TIMER_ID);
         GKI_stop_timer (NFC_QUICK_TIMER_ID);
-#if (defined (NFA_INCLUDED) && NFA_INCLUDED == TRUE)
+#if (NFA_INCLUDED == TRUE)
         GKI_stop_timer (NFA_TIMER_ID);
 #endif
     }
@@ -359,11 +360,11 @@ void nfc_task_shutdown_nfcc (void)
 ** Returns          nothing
 **
 *******************************************************************************/
-UINT32 nfc_task (UINT32 param)
+uint32_t nfc_task (uint32_t param)
 {
-    UINT16  event;
-    BT_HDR  *p_msg;
-    BOOLEAN free_buf;
+    uint16_t  event;
+    NFC_HDR  *p_msg;
+    bool    free_buf;
 
     /* Initialize the nfc control block */
     memset (&nfc_cb, 0, sizeof (tNFC_CB));
@@ -372,7 +373,7 @@ UINT32 nfc_task (UINT32 param)
     NFC_TRACE_DEBUG0 ("NFC_TASK started.");
 
     /* main loop */
-    while (TRUE)
+    while (true)
     {
         event = GKI_wait (0xFFFF, 0);
 
@@ -389,12 +390,12 @@ UINT32 nfc_task (UINT32 param)
         if (event & NFC_MBOX_EVT_MASK)
         {
             /* Process all incoming NCI messages */
-            while ((p_msg = (BT_HDR *) GKI_read_mbox (NFC_MBOX_ID)) != NULL)
+            while ((p_msg = (NFC_HDR *) GKI_read_mbox (NFC_MBOX_ID)) != NULL)
             {
-                free_buf = TRUE;
+                free_buf = true;
 
                 /* Determine the input message type. */
-                switch (p_msg->event & BT_EVT_MASK)
+                switch (p_msg->event & NFC_EVT_MASK)
                 {
                     case BT_EVT_TO_NFC_NCI:
                         free_buf = nfc_ncif_process_event (p_msg);
@@ -402,12 +403,14 @@ UINT32 nfc_task (UINT32 param)
 
                     case BT_EVT_TO_START_TIMER :
                         /* Start nfc_task 1-sec resolution timer */
-                        GKI_start_timer (NFC_TIMER_ID, GKI_SECS_TO_TICKS (1), TRUE);
+                        GKI_start_timer (NFC_TIMER_ID, GKI_SECS_TO_TICKS (1),
+					 true);
                         break;
 
                     case BT_EVT_TO_START_QUICK_TIMER :
                         /* Quick-timer is required for LLCP */
-                        GKI_start_timer (NFC_QUICK_TIMER_ID, ((GKI_SECS_TO_TICKS (1) / QUICK_TIMER_TICKS_PER_SEC)), TRUE);
+                        GKI_start_timer (NFC_QUICK_TIMER_ID, ((GKI_SECS_TO_TICKS (1) / QUICK_TIMER_TICKS_PER_SEC)),
+					 true);
                         break;
 
                     case BT_EVT_TO_NFC_MSGS:
@@ -438,10 +441,10 @@ UINT32 nfc_task (UINT32 param)
             nfc_process_quick_timer_evt ();
         }
 
-#if (defined (NFA_INCLUDED) && NFA_INCLUDED == TRUE)
+#if (NFA_INCLUDED == TRUE)
         if (event & NFA_MBOX_EVT_MASK)
         {
-            while ((p_msg = (BT_HDR *) GKI_read_mbox (NFA_MBOX_ID)) != NULL)
+            while ((p_msg = (NFC_HDR *) GKI_read_mbox (NFA_MBOX_ID)) != NULL)
             {
                 nfa_sys_event (p_msg);
             }
