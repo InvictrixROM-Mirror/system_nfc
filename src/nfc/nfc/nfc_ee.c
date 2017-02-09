@@ -16,41 +16,39 @@
  *
  ******************************************************************************/
 
-
 /******************************************************************************
  *
  *  This file contains functions that interface with the NFCEEs.
  *
  ******************************************************************************/
 #include <string.h>
+#include "bt_types.h"
 #include "gki.h"
 #include "nfc_target.h"
-#include "bt_types.h"
 
 #if (NFC_INCLUDED == TRUE)
+#include "nci_hmsgs.h"
 #include "nfc_api.h"
 #include "nfc_int.h"
-#include "nci_hmsgs.h"
-
 
 /*******************************************************************************
 **
 ** Function         NFC_NfceeDiscover
 **
-** Description      This function is called to enable or disable NFCEE Discovery.
-**                  The response from NFCC is reported by tNFC_RESPONSE_CBACK
-**                  as NFC_NFCEE_DISCOVER_REVT.
-**                  The notification from NFCC is reported by tNFC_RESPONSE_CBACK
-**                  as NFC_NFCEE_INFO_REVT.
+** Description      This function is called to enable or disable NFCEE
+**                  Discovery. The response from NFCC is reported by
+**                  tNFC_RESPONSE_CBACK as NFC_NFCEE_DISCOVER_REVT.
+**                  The notification from NFCC is reported by
+**                  tNFC_RESPONSE_CBACK as NFC_NFCEE_INFO_REVT.
 **
 ** Parameters       discover - 1 to enable discover, 0 to disable.
 **
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-tNFC_STATUS NFC_NfceeDiscover (bool    discover)
-{
-    return nci_snd_nfcee_discover ((uint8_t) (discover ? NCI_DISCOVER_ACTION_ENABLE : NCI_DISCOVER_ACTION_DISABLE));
+tNFC_STATUS NFC_NfceeDiscover(bool discover) {
+  return nci_snd_nfcee_discover((uint8_t)(
+      discover ? NCI_DISCOVER_ACTION_ENABLE : NCI_DISCOVER_ACTION_DISABLE));
 }
 
 /*******************************************************************************
@@ -69,20 +67,14 @@ tNFC_STATUS NFC_NfceeDiscover (bool    discover)
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-tNFC_STATUS NFC_NfceeModeSet (uint8_t            nfcee_id,
-                              tNFC_NFCEE_MODE    mode)
-{
-    if (mode >= NCI_NUM_NFCEE_MODE)
-    {
-        NFC_TRACE_ERROR1 ("NFC_NfceeModeSet bad mode:%d", mode);
-        return NFC_STATUS_FAILED;
-    }
+tNFC_STATUS NFC_NfceeModeSet(uint8_t nfcee_id, tNFC_NFCEE_MODE mode) {
+  if (mode >= NCI_NUM_NFCEE_MODE) {
+    NFC_TRACE_ERROR1("NFC_NfceeModeSet bad mode:%d", mode);
+    return NFC_STATUS_FAILED;
+  }
 
-    return nci_snd_nfcee_mode_set (nfcee_id, mode);
+  return nci_snd_nfcee_mode_set(nfcee_id, mode);
 }
-
-
-
 
 /*******************************************************************************
 **
@@ -97,29 +89,22 @@ tNFC_STATUS NFC_NfceeModeSet (uint8_t            nfcee_id,
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-tNFC_STATUS NFC_SetRouting (bool    more,
-                             uint8_t  num_tlv,
-                             uint8_t  tlv_size,
-                             uint8_t  *p_param_tlvs)
-{
-    return nci_snd_set_routing_cmd (more, num_tlv, tlv_size, p_param_tlvs);
+tNFC_STATUS NFC_SetRouting(bool more, uint8_t num_tlv, uint8_t tlv_size,
+                           uint8_t* p_param_tlvs) {
+  return nci_snd_set_routing_cmd(more, num_tlv, tlv_size, p_param_tlvs);
 }
 
 /*******************************************************************************
 **
 ** Function         NFC_GetRouting
 **
-** Description      This function is called to retrieve the CE routing table from
-**                  NFCC. The response from NFCC is reported by tNFC_RESPONSE_CBACK
-**                  as NFC_GET_ROUTING_REVT.
+** Description      This function is called to retrieve the CE routing table
+**                  from NFCC. The response from NFCC is reported by
+**                  tNFC_RESPONSE_CBACK as NFC_GET_ROUTING_REVT.
 **
 ** Returns          tNFC_STATUS
 **
 *******************************************************************************/
-tNFC_STATUS NFC_GetRouting (void)
-{
-    return nci_snd_get_routing_cmd ();
-}
-
+tNFC_STATUS NFC_GetRouting(void) { return nci_snd_get_routing_cmd(); }
 
 #endif /* NFC_INCLUDED == TRUE */
