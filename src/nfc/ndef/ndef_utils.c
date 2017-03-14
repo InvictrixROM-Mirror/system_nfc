@@ -105,8 +105,10 @@ tNDEF_STATUS NDEF_MsgValidate(uint8_t* p_msg, uint32_t msg_len,
     /* Type field length */
     type_len = *p_rec++;
 
-    /* If the record is chunked, first record must contain the type */
-    if ((rec_hdr & NDEF_CF_MASK) && (rec_hdr & NDEF_MB_MASK) && type_len == 0)
+    /* If the record is chunked, first record must contain the type unless
+     * it's Type Name Format is Unknown */
+    if ((rec_hdr & NDEF_CF_MASK) && (rec_hdr & NDEF_MB_MASK) && type_len == 0 &&
+        (rec_hdr & NDEF_TNF_MASK) != NDEF_TNF_UNKNOWN)
       return (NDEF_MSG_INVALID_CHUNK);
 
     /* Payload length - can be 1 or 4 bytes */
@@ -506,7 +508,8 @@ uint8_t* NDEF_MsgGetNextRecByType(uint8_t* p_cur_rec, uint8_t tnf,
   uint32_t payload_len;
 
   /* If this is the last record in the message, return NULL */
-  if ((p_rec = NDEF_MsgGetNextRec(p_cur_rec)) == NULL) return (NULL);
+  p_rec = NDEF_MsgGetNextRec(p_cur_rec);
+  if (p_rec == NULL) return (NULL);
 
   for (;;) {
     pRecStart = p_rec;
@@ -617,7 +620,8 @@ uint8_t* NDEF_MsgGetNextRecById(uint8_t* p_cur_rec, uint8_t* p_id,
   uint32_t payload_len;
 
   /* If this is the last record in the message, return NULL */
-  if ((p_rec = NDEF_MsgGetNextRec(p_cur_rec)) == NULL) return (NULL);
+  p_rec = NDEF_MsgGetNextRec(p_cur_rec);
+  if (p_rec == NULL) return (NULL);
 
   for (;;) {
     pRecStart = p_rec;
@@ -983,8 +987,8 @@ extern tNDEF_STATUS NDEF_MsgAppendRec(uint8_t* p_msg, uint32_t max_size,
   tNDEF_STATUS status;
 
   /* First, validate new records */
-  if ((status = NDEF_MsgValidate(p_new_rec, new_rec_len, false)) != NDEF_OK)
-    return (status);
+  status = NDEF_MsgValidate(p_new_rec, new_rec_len, false);
+  if (status != NDEF_OK) return (status);
 
   /* First, make sure the record will fit */
   if ((*p_cur_size + new_rec_len) > max_size)
@@ -1389,7 +1393,8 @@ tNDEF_STATUS NDEF_MsgRemoveRec(uint8_t* p_msg, uint32_t* p_cur_size,
   /* If this is the first record in the message... */
   if (*p_rec & NDEF_MB_MASK) {
     /* Find the second record (if any) and set his 'Message Begin' bit */
-    if ((pNext = NDEF_MsgGetRecByIndex(p_msg, 1)) != NULL) {
+    pNext = NDEF_MsgGetRecByIndex(p_msg, 1);
+    if (pNext != NULL) {
       *pNext |= NDEF_MB_MASK;
 
       *p_cur_size -= (uint32_t)(pNext - p_msg);
@@ -1405,8 +1410,8 @@ tNDEF_STATUS NDEF_MsgRemoveRec(uint8_t* p_msg, uint32_t* p_cur_size,
   if (*p_rec & NDEF_ME_MASK) {
     if (index > 0) {
       /* Find the previous record and set his 'Message End' bit */
-      if ((pPrev = NDEF_MsgGetRecByIndex(p_msg, index - 1)) == NULL)
-        return false;
+      pPrev = NDEF_MsgGetRecByIndex(p_msg, index - 1);
+      if (pPrev == NULL) return false;
 
       *pPrev |= NDEF_ME_MASK;
     }
@@ -1416,7 +1421,8 @@ tNDEF_STATUS NDEF_MsgRemoveRec(uint8_t* p_msg, uint32_t* p_cur_size,
   }
 
   /* Not the first or the last... get the address of the next record */
-  if ((pNext = NDEF_MsgGetNextRec(p_rec)) == NULL) return false;
+  pNext = NDEF_MsgGetNextRec(p_rec);
+  if (pNext == NULL) return false;
 
   /* We are removing p_rec, so shift from pNext to the end */
   shiftup(p_rec, pNext, (uint32_t)(*p_cur_size - (pNext - p_msg)));
@@ -1449,8 +1455,8 @@ tNDEF_STATUS NDEF_MsgCopyAndDechunk(uint8_t* p_src, uint32_t src_len,
   tNDEF_STATUS status;
 
   /* First, validate the source */
-  if ((status = NDEF_MsgValidate(p_src, src_len, true)) != NDEF_OK)
-    return (status);
+  status = NDEF_MsgValidate(p_src, src_len, true);
+  if (status != NDEF_OK) return (status);
 
   /* The output buffer must be at least as large as the input buffer */
   max_out_len = src_len;

@@ -546,6 +546,9 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
           || (PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer)
 #elif (NFC_NXP_CHIP_TYPE == PN548C2)
           || (PHDNLDNFC_HWVER_PN548AD_MRA1_0 == bHwVer)
+#elif (NFC_NXP_CHIP_TYPE == PN553)
+          || (PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
+              PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])
 #endif
               ) {
         bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1;
@@ -592,6 +595,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
       else if ((FALSE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                (bNewVer[1] < bCurrVer[1])) {
         NXPLOG_FWDNLD_E("Version Check Failed - MajorVerNum Mismatch\n");
+        NXPLOG_FWDNLD_E("NewVer %d != CurrVer %d\n", bNewVer[1], bCurrVer[1]);
         wStatus = NFCSTATUS_NOT_ALLOWED;
       }
       /* Minor Version number check - before download.*/
